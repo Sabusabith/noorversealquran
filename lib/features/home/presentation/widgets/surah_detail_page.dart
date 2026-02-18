@@ -293,7 +293,7 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
           ),
         ),
       ),
-      backgroundColor: const Color(0xFFF8F5EE),
+      backgroundColor: Colors.white,
       appBar: AppBar(
         toolbarHeight: 80,
         backgroundColor: kprimeryColor,
@@ -565,8 +565,14 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
         widget.translationRepo.selectedLanguage != null;
 
     return Container(
-      color: const Color(0xFFF8F5EE),
-      padding: const EdgeInsets.only(left: 20, right: 20, top: 15, bottom: 1),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(1),
+        border: Border.all(color: Color.fromARGB(255, 201, 171, 2), width: 2),
+        color: Colors.white,
+        // image: DecorationImage(image: AssetImage("assets/images/border1.jpeg")),
+      ),
+
+      padding: const EdgeInsets.only(left: 25, right: 25, top: 15, bottom: 1),
       child: Column(
         children: [
           if (showBismillah) _buildBismillah(),
@@ -611,7 +617,8 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
                                       ),
                                       TextSpan(
                                         text: " ﴿${ayahs[i].number}﴾ ",
-                                        style: const TextStyle(
+                                        style: GoogleFonts.amiri(
+                                          fontSize: 18,
                                           color: Colors.orange,
                                         ),
                                       ),
@@ -655,7 +662,7 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
                               children: [
                                 TextSpan(
                                   text: ayahs[i].text,
-                                  style: TextStyle(
+                                  style: GoogleFonts.amiri(
                                     color:
                                         (_isAudioPlaying &&
                                             currentAyahIndex.value >=
@@ -680,7 +687,10 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
                                 ),
                                 TextSpan(
                                   text: " ﴿${ayahs[i].number}﴾ ",
-                                  style: const TextStyle(color: Colors.orange),
+                                  style: GoogleFonts.amiri(
+                                    color: Colors.orange,
+                                    fontSize: 20,
+                                  ),
                                 ),
                               ],
                             ),
@@ -702,21 +712,16 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
         width: double.infinity,
         padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 20),
         decoration: BoxDecoration(
-          color: const Color(0xFFFDF8E8),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xFFB7935F), width: 1.5),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 8,
-              offset: const Offset(0, 4),
-            ),
-          ],
+          image: DecorationImage(
+            image: AssetImage("assets/images/smallbroder.png"),
+            fit: BoxFit.cover,
+          ),
         ),
+
+        // color: const Color(0xFFFDF8E8),
         child: Column(
           children: [
-            _buildBismillahDivider(),
-            const SizedBox(height: 5),
+            const SizedBox(height: 8),
             Text(
               "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ",
               textAlign: TextAlign.center,
@@ -724,11 +729,11 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
                 fontSize: 25,
                 height: 2,
                 fontWeight: FontWeight.bold,
-                color: Colors.black87,
+                color: Colors.white,
               ),
             ),
-            const SizedBox(height: 5),
-            _buildBismillahDivider(),
+            const SizedBox(height: 8),
+            // _buildBismillahDivider(),
           ],
         ),
       ),

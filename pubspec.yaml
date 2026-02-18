@@ -41,6 +41,7 @@ dependencies:
   dio: ^5.9.1
   shared_preferences: ^2.5.4
   just_audio: ^0.10.5
+  dropdown_button2: ^2.3.9
 
 dev_dependencies:
   flutter_test:

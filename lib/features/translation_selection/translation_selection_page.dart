@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:noorversealquran/features/translation_selection/repository/tranlsation_repo.dart';
 import 'package:noorversealquran/utils/common/app_colors.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:dropdown_button2/dropdown_button2.dart';
 
 class TranslationSelectionPage extends StatefulWidget {
   final TranslationRepository translationRepo;
@@ -20,7 +21,11 @@ class _TranslationSelectionPageState extends State<TranslationSelectionPage> {
 
   final Map<String, String> languages = {
     'ml': 'Malayalam',
-    'en': 'English', // future languages
+    'en': 'English',
+    'hi': 'Hindi',
+    'de': 'German',
+    'id': 'Indonesian',
+    'tr': 'Turkish',
   };
 
   @override
@@ -79,6 +84,26 @@ class _TranslationSelectionPageState extends State<TranslationSelectionPage> {
         'en',
         'assets/quran/quran_en.json',
       );
+    } else if (lang == 'hi') {
+      await widget.translationRepo.loadLanguage(
+        'hi',
+        'assets/quran/quran_hi.json',
+      );
+    } else if (lang == 'de') {
+      await widget.translationRepo.loadLanguage(
+        'de',
+        'assets/quran/quran_de.json',
+      );
+    } else if (lang == 'id') {
+      await widget.translationRepo.loadLanguage(
+        'id',
+        'assets/quran/quran_id.json',
+      );
+    } else if (lang == 'tr') {
+      await widget.translationRepo.loadLanguage(
+        'tr',
+        'assets/quran/quran_tr.json',
+      );
     }
 
     setState(() {
@@ -134,29 +159,25 @@ class _TranslationSelectionPageState extends State<TranslationSelectionPage> {
                   Expanded(
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 12),
-                      decoration: BoxDecoration(
-                        color: kbgColor, // your soft cream tone
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(
-                          color: kprimeryColor.withOpacity(0.4),
-                          width: 1.2,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.04),
-                            blurRadius: 6,
-                            offset: const Offset(0, 3),
-                          ),
-                        ],
-                      ),
+                      // decoration: BoxDecoration(
+                      //   color: kbgColor, // your soft cream tone
+                      //   borderRadius: BorderRadius.circular(14),
+                      //   border: Border.all(
+                      //     color: kprimeryColor.withOpacity(0.4),
+                      //     width: 1.2,
+                      //   ),
+                      //   boxShadow: [
+                      //     BoxShadow(
+                      //       color: Colors.black.withOpacity(0.04),
+                      //       blurRadius: 6,
+                      //       offset: const Offset(0, 3),
+                      //     ),
+                      //   ],
+                      // ),
                       child: DropdownButtonHideUnderline(
-                        child: DropdownButton<String>(
+                        child: DropdownButton2<String>(
                           isExpanded: true,
                           value: selectedLanguage,
-                          icon: Icon(
-                            Icons.keyboard_arrow_down_rounded,
-                            color: kprimeryColor,
-                          ),
                           hint: Text(
                             'Choose Language',
                             style: GoogleFonts.publicSans(
@@ -164,25 +185,53 @@ class _TranslationSelectionPageState extends State<TranslationSelectionPage> {
                               color: Colors.grey.shade600,
                             ),
                           ),
-                          dropdownColor: kbgColor,
-                          style: GoogleFonts.publicSans(
-                            fontSize: 15,
-                            color: Colors.black87,
-                          ),
                           items: languages.entries
                               .map(
                                 (e) => DropdownMenuItem<String>(
                                   value: e.key,
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                      vertical: 6,
+                                  child: Text(
+                                    e.value,
+                                    style: GoogleFonts.publicSans(
+                                      fontSize: 15,
+                                      color: Colors.black87,
                                     ),
-                                    child: Text(e.value),
                                   ),
                                 ),
                               )
                               .toList(),
                           onChanged: _selectLanguage,
+
+                          // Button Style
+                          buttonStyleData: ButtonStyleData(
+                            height: 50,
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            decoration: BoxDecoration(
+                              color: kbgColor,
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(
+                                color: kprimeryColor.withOpacity(0.4),
+                                width: 1.2,
+                              ),
+                            ),
+                          ),
+
+                          // Icon Style
+                          iconStyleData: IconStyleData(
+                            icon: Icon(
+                              Icons.keyboard_arrow_down_rounded,
+                              color: kprimeryColor,
+                            ),
+                            iconSize: 24,
+                          ),
+
+                          // Dropdown Style
+                          dropdownStyleData: DropdownStyleData(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(14),
+                              color: kbgColor,
+                            ),
+                            elevation: 4,
+                          ),
                         ),
                       ),
                     ),
