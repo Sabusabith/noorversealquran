@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:noorversealquran/features/translation_selection/repository/tranlsation_repo.dart';
+import 'package:noorversealquran/features/translation_selection/translation_selection_page.dart';
 import 'package:noorversealquran/utils/common/app_colors.dart';
 
 class DrawerMenu extends StatelessWidget {
-  const DrawerMenu({super.key});
+  final TranslationRepository translationRepo;
+
+  const DrawerMenu({super.key, required this.translationRepo});
 
   @override
   Widget build(BuildContext context) {
@@ -43,9 +47,20 @@ class DrawerMenu extends StatelessWidget {
 
           /// Menu Items
           _drawerItem(
-            icon: Icons.menu_book_outlined,
-            title: "Surahs",
-            onTap: () {},
+            icon: Icons.translate,
+            title: "Translation",
+            onTap: () async {
+              Navigator.pop(context); // close drawer first
+              await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => TranslationSelectionPage(
+                    translationRepo: translationRepo,
+                  ),
+                ),
+              );
+              (context as Element).markNeedsBuild();
+            },
           ),
 
           _drawerItem(
