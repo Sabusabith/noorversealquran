@@ -33,6 +33,9 @@ class SurahDetailsPage extends StatefulWidget {
 
 class _SurahDetailsPageState extends State<SurahDetailsPage>
     with AutomaticKeepAliveClientMixin {
+  final ScrollController _scrollController = ScrollController();
+  final List<GlobalKey> _ayahKeys = [];
+
   late List<List<Ayah>> pagedAyahs;
   late PageController _pageController;
 
@@ -55,6 +58,10 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
   void initState() {
     super.initState();
     pagedAyahs = _splitIntoPages(widget.ayahs);
+    _ayahKeys.addAll(
+      List.generate(widget.ayahs.length, (index) => GlobalKey()),
+    );
+
     _loadSavedPage();
     _initialize();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
@@ -216,7 +223,11 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
       _audioPlayer.currentIndexStream.listen((index) {
         if (index != null) {
           currentAyahIndex.value = index;
-
+          if (_isAudioPlaying) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              _scrollToAyah(index);
+            });
+          }
           // Auto change page based on Ayah
           final newPage = index ~/ 7;
           if (newPage != currentPage) {
@@ -266,6 +277,8 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
   void dispose() {
     _audioPlayer.dispose();
     currentAyahIndex.dispose();
+    _scrollController.dispose();
+
     super.dispose();
   }
 
@@ -520,6 +533,87 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
     );
   }
 
+  void _scrollToAyah(int globalIndex) {
+    final isTranslationOn =
+        widget.translationRepo.translationEnabled &&
+        widget.translationRepo.selectedLanguage != null;
+
+    // -----------------------------
+    // 🔹 TRANSLATION MODE (Perfect)
+    // -----------------------------
+    if (isTranslationOn) {
+      if (globalIndex < 0 || globalIndex >= _ayahKeys.length) return;
+
+      final context = _ayahKeys[globalIndex].currentContext;
+      if (context == null) return;
+
+      Scrollable.ensureVisible(
+        context,
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.easeInOut,
+        alignment: 0.2,
+      );
+      return;
+    }
+
+    // ---------------------------------
+    // 🔥 PARAGRAPH MODE (Pixel Perfect)
+    // ---------------------------------
+
+    final int pageStartIndex = currentPage * 7;
+    final int localIndex = globalIndex - pageStartIndex;
+
+    if (localIndex < 0 || localIndex >= pagedAyahs[currentPage].length) return;
+
+    final currentPageAyahs = pagedAyahs[currentPage];
+
+    // Build paragraph EXACTLY like RichText
+    final List<InlineSpan> spans = [];
+    for (int i = 0; i < currentPageAyahs.length; i++) {
+      spans.add(
+        TextSpan(
+          text: currentPageAyahs[i].text,
+          style: GoogleFonts.amiri(fontSize: 27, height: 2.4),
+        ),
+      );
+      spans.add(
+        TextSpan(
+          text: " ﴿${currentPageAyahs[i].number}﴾ ",
+          style: GoogleFonts.amiri(fontSize: 20, height: 2.4),
+        ),
+      );
+    }
+
+    final TextPainter textPainter = TextPainter(
+      text: TextSpan(children: spans),
+      textDirection: TextDirection.rtl,
+      textAlign: TextAlign.justify,
+    );
+
+    final double maxWidth = MediaQuery.of(context).size.width - 50;
+    textPainter.layout(maxWidth: maxWidth);
+
+    // Calculate character offset before target ayah
+    int charOffset = 0;
+    for (int i = 0; i < localIndex; i++) {
+      charOffset += currentPageAyahs[i].text.length;
+      charOffset += " ﴿${currentPageAyahs[i].number}﴾ ".length;
+    }
+
+    final Offset caretOffset = textPainter.getOffsetForCaret(
+      TextPosition(offset: charOffset),
+      Rect.zero,
+    );
+
+    if (_scrollController.hasClients) {
+      _scrollController.animateTo(
+        caretOffset.dy - 80, // 🔥 shift up slightly
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
+
   Widget _styledInfoRow(String title, String value) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
@@ -580,12 +674,15 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
 
           Expanded(
             child: SingleChildScrollView(
+              controller: _scrollController,
               child: isTranslationOn
                   ? Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         for (int i = 0; i < ayahs.length; i++)
                           Padding(
+                            key: _ayahKeys[ayahStartIndex + i],
+
                             padding: const EdgeInsets.only(bottom: 18),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -653,50 +750,40 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
                       ],
                     )
                   /// 🔥 THIS IS YOUR ORIGINAL DESIGN (UNCHANGED)
-                  : SelectableText.rich(
-                      TextSpan(
+                  : RichText(
+                      textAlign: TextAlign.justify,
+                      textDirection: TextDirection.rtl,
+                      text: TextSpan(
                         style: GoogleFonts.amiri(fontSize: 27, height: 2.4),
                         children: [
-                          for (int i = 0; i < ayahs.length; i++)
+                          for (int i = 0; i < ayahs.length; i++) ...[
                             TextSpan(
-                              children: [
-                                TextSpan(
-                                  text: ayahs[i].text,
-                                  style: GoogleFonts.amiri(
-                                    color:
-                                        (_isAudioPlaying &&
-                                            currentAyahIndex.value >=
-                                                ayahStartIndex &&
-                                            currentAyahIndex.value <
-                                                ayahStartIndex + ayahs.length &&
-                                            (ayahStartIndex + i) ==
-                                                currentAyahIndex.value)
-                                        ? Colors.green
-                                        : Colors.black,
-                                    fontWeight:
-                                        (_isAudioPlaying &&
-                                            currentAyahIndex.value >=
-                                                ayahStartIndex &&
-                                            currentAyahIndex.value <
-                                                ayahStartIndex + ayahs.length &&
-                                            (ayahStartIndex + i) ==
-                                                currentAyahIndex.value)
-                                        ? FontWeight.bold
-                                        : FontWeight.normal,
-                                  ),
-                                ),
-                                TextSpan(
-                                  text: " ﴿${ayahs[i].number}﴾ ",
-                                  style: GoogleFonts.amiri(
-                                    color: Colors.orange,
-                                    fontSize: 20,
-                                  ),
-                                ),
-                              ],
+                              text: ayahs[i].text,
+                              style: GoogleFonts.amiri(
+                                color:
+                                    (_isAudioPlaying &&
+                                        (ayahStartIndex + i) ==
+                                            currentAyahIndex.value)
+                                    ? Colors.green
+                                    : Colors.black,
+                                fontWeight:
+                                    (_isAudioPlaying &&
+                                        (ayahStartIndex + i) ==
+                                            currentAyahIndex.value)
+                                    ? FontWeight.bold
+                                    : FontWeight.normal,
+                              ),
                             ),
+                            TextSpan(
+                              text: " ﴿${ayahs[i].number}﴾ ",
+                              style: GoogleFonts.amiri(
+                                color: Colors.orange,
+                                fontSize: 20,
+                              ),
+                            ),
+                          ],
                         ],
                       ),
-                      textAlign: TextAlign.justify,
                     ),
             ),
           ),
