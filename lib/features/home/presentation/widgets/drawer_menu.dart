@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:noorversealquran/features/home/presentation/widgets/about/about.dart';
 import 'package:noorversealquran/features/translation_selection/repository/tranlsation_repo.dart';
 import 'package:noorversealquran/features/translation_selection/translation_selection_page.dart';
+
 import 'package:noorversealquran/utils/common/app_colors.dart';
 
 class DrawerMenu extends StatelessWidget {
@@ -65,7 +67,7 @@ class DrawerMenu extends StatelessWidget {
 
           _drawerItem(
             icon: Icons.bookmark_border,
-            title: "Bookmarks",
+            title: "BookMark",
             onTap: () {},
           ),
 
@@ -75,7 +77,16 @@ class DrawerMenu extends StatelessWidget {
             onTap: () {},
           ),
 
-          _drawerItem(icon: Icons.info_outline, title: "About", onTap: () {}),
+          _drawerItem(
+            icon: Icons.info_outline,
+            title: "About",
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => AboutPage()),
+              );
+            },
+          ),
         ],
       ),
     );

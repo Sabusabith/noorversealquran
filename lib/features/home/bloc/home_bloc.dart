@@ -51,16 +51,32 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
 
   void _onSearchTextChanged(SearchTextChanged event, Emitter<HomeState> emit) {
     final current = state;
-    if (current is HomeLoaded) {
-      final filtered = current.allSurahs
-          .where(
-            (s) =>
-                s.nameEn.toLowerCase().contains(event.query.toLowerCase()) ||
-                s.nameAr.toLowerCase().contains(event.query.toLowerCase()),
-          )
-          .toList();
+    if (current is! HomeLoaded) return;
 
-      emit(current.copyWith(filteredSurahs: filtered, query: event.query));
+    final query = event.query.trim();
+
+    // If empty → show all surahs
+    if (query.isEmpty) {
+      emit(current.copyWith(filteredSurahs: current.allSurahs, query: ''));
+      return;
     }
+
+    final lowerQuery = query.toLowerCase();
+
+    String normalizeArabic(String text) {
+      return text.replaceAll(RegExp(r'[\u064B-\u0652]'), '');
+    }
+
+    final normalizedQuery = normalizeArabic(query);
+
+    final filtered = current.allSurahs.where((s) {
+      final englishMatch = s.tName.toLowerCase().contains(lowerQuery);
+
+      final arabicMatch = normalizeArabic(s.nameAr).contains(normalizedQuery);
+
+      return englishMatch || arabicMatch;
+    }).toList();
+
+    emit(current.copyWith(filteredSurahs: filtered, query: query));
   }
 }

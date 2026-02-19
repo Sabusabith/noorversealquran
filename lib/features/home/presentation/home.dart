@@ -187,7 +187,9 @@ class _HomeViewState extends State<HomeView> {
       body: BlocBuilder<HomeBloc, HomeState>(
         builder: (context, state) {
           if (state is HomeLoading)
-            return const Center(child: CircularProgressIndicator());
+            return Center(
+              child: CircularProgressIndicator(color: kprimeryColor),
+            );
           if (state is HomeError)
             return Center(child: Text("Error: ${state.message}"));
           if (state is HomeLoaded) {

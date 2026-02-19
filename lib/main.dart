@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:noorversealquran/core/app_snackbar.dart';
 import 'package:noorversealquran/features/splash/bloc/splash_bloc.dart';

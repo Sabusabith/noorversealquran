@@ -204,7 +204,7 @@ class _TranslationSelectionPageState extends State<TranslationSelectionPage> {
                           // Button Style
                           buttonStyleData: ButtonStyleData(
                             height: 50,
-                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
                             decoration: BoxDecoration(
                               color: kbgColor,
                               borderRadius: BorderRadius.circular(14),

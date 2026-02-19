@@ -1,13 +1,14 @@
 import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:noorversealquran/features/home/data/model/surah_model.dart.dart';
-import 'package:noorversealquran/data/model/ayah_model.dart';
-import 'package:noorversealquran/features/translation_selection/repository/tranlsation_repo.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:noorversealquran/utils/common/app_colors.dart';
-import 'package:just_audio/just_audio.dart';
 import 'package:http/http.dart' as http;
+import 'package:just_audio/just_audio.dart';
+import 'package:noorversealquran/data/model/ayah_model.dart';
+import 'package:noorversealquran/features/home/data/model/surah_model.dart.dart';
+import 'package:noorversealquran/features/translation_selection/repository/tranlsation_repo.dart';
+import 'package:noorversealquran/utils/common/app_colors.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SurahDetailsPage extends StatefulWidget {
   final TranslationRepository translationRepo; // add this
@@ -287,7 +288,9 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
     super.build(context);
 
     if (!_fontsLoaded) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      return Scaffold(
+        body: Center(child: CircularProgressIndicator(color: kprimeryColor)),
+      );
     }
 
     final showBismillah = widget.surah.number != 9;
@@ -418,7 +421,7 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
               child: Center(
                 child: Text(
                   "Page ${currentPage + 1} of ${pagedAyahs.length}",
-                  style: const TextStyle(
+                  style: GoogleFonts.publicSans(
                     color: Colors.white,
                     fontWeight: FontWeight.w600,
                   ),
