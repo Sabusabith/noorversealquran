@@ -1,6 +1,9 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:noorversealquran/features/home/presentation/widgets/about/about.dart';
+import 'package:noorversealquran/features/quiz/presentation/pages/quiz_splash/quiz_splash.dart';
+import 'package:noorversealquran/features/quiz/presentation/pages/quizscreen.dart';
 import 'package:noorversealquran/features/translation_selection/repository/tranlsation_repo.dart';
 import 'package:noorversealquran/features/translation_selection/translation_selection_page.dart';
 
@@ -64,13 +67,17 @@ class DrawerMenu extends StatelessWidget {
               (context as Element).markNeedsBuild();
             },
           ),
-
           _drawerItem(
-            icon: Icons.bookmark_border,
-            title: "BookMark",
-            onTap: () {},
-          ),
+            icon: Icons.extension,
 
+            title: "Quiz",
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => QuizWelcomeScreen()),
+              );
+            },
+          ),
           _drawerItem(
             icon: Icons.settings_outlined,
             title: "Settings",

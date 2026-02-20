@@ -43,6 +43,7 @@ dependencies:
   just_audio: ^0.10.5
   dropdown_button2: ^2.3.9
   html_unescape: ^2.0.0
+  confetti: ^0.8.0
 
 dev_dependencies:
   flutter_launcher_icons: ^0.14.3
