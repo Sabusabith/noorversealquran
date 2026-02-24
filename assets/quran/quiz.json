@@ -497,5 +497,295 @@
     }
   }
 
-
+  ,
+    {
+      "question": {
+        "en": "Which Surah is known as the Heart of the Qur’an?",
+        "ar": "ما هي السورة المعروفة بقلب القرآن؟",
+        "ml": "ഖുർആനിന്റെ ഹൃദയം എന്ന് അറിയപ്പെടുന്ന സൂറത് ഏതാണ്?"
+      },
+      "options": {
+        "en": ["Surah Yasin", "Surah Rahman", "Surah Mulk", "Surah Kahf"],
+        "ar": ["سورة يس", "سورة الرحمن", "سورة الملك", "سورة الكهف"],
+        "ml": ["സൂറത് യാസീൻ", "സൂറത് റഹ്മാൻ", "സൂറത് മുൽക്ക്", "സൂറത് കഹ്ഫ്"]
+      },
+      "answer": {
+        "en": "Surah Yasin",
+        "ar": "سورة يس",
+        "ml": "സൂറത് യാസീൻ"
+      }
+    },
+    {
+      "question": {
+        "en": "Which angel delivered revelation to Prophet Muhammad ﷺ?",
+        "ar": "من هو الملاك الذي نزل بالوحي على النبي محمد ﷺ؟",
+        "ml": "പ്രവാചകൻ മുഹമ്മദ് ﷺ ന് വെളിപ്പെടുത്തൽ കൊണ്ടുവന്ന ദൂത് ആരാണ്?"
+      },
+      "options": {
+        "en": ["Angel Mikail", "Angel Israfil", "Angel Jibreel", "Angel Malik"],
+        "ar": ["الملاك ميكائيل", "الملاك إسرافيل", "الملاك جبريل", "الملاك مالك"],
+        "ml": ["മീഖായിൽ", "ഇസ്രാഫീൽ", "ജിബ്രീൽ", "മാലിക്"]
+      },
+      "answer": {
+        "en": "Angel Jibreel",
+        "ar": "الملاك جبريل",
+        "ml": "ജിബ്രീൽ"
+      }
+    },
+    {
+      "question": {
+        "en": "In which cave did Prophet Muhammad ﷺ receive the first revelation?",
+        "ar": "في أي كهف تلقى النبي محمد ﷺ أول وحي؟",
+        "ml": "പ്രവാചകൻ മുഹമ്മദ് ﷺ ആദ്യ വെളിപ്പെടുത്തൽ ലഭിച്ചത് ഏത് ഗുഹയിലാണ്?"
+      },
+      "options": {
+        "en": ["Cave Thawr", "Cave Hira", "Cave Uhud", "Cave Sinai"],
+        "ar": ["كهف ثور", "كهف حراء", "كهف أحد", "كهف سيناء"],
+        "ml": ["ഥൗർ ഗുഹ", "ഹിറാ ഗുഹ", "ഉഹുദ് ഗുഹ", "സീനായ് ഗുഹ"]
+      },
+      "answer": {
+        "en": "Cave Hira",
+        "ar": "كهف حراء",
+        "ml": "ഹിറാ ഗുഹ"
+      }
+    },
+    {
+      "question": {
+        "en": "How many pillars of Islam are there?",
+        "ar": "كم عدد أركان الإسلام؟",
+        "ml": "ഇസ്ലാമിന് എത്ര തൂണുകൾ ഉണ്ട്?"
+      },
+      "options": {
+        "en": ["Four", "Five", "Six", "Seven"],
+        "ar": ["أربعة", "خمسة", "ستة", "سبعة"],
+        "ml": ["നാല്", "അഞ്ച്", "ആറ്", "ഏഴ്"]
+      },
+      "answer": {
+        "en": "Five",
+        "ar": "خمسة",
+        "ml": "അഞ്ച്"
+      }
+    },
+    {
+      "question": {
+        "en": "What is the first pillar of Islam?",
+        "ar": "ما هو أول ركن من أركان الإسلام؟",
+        "ml": "ഇസ്ലാമിന്റെ ആദ്യ തൂൺ ഏതാണ്?"
+      },
+      "options": {
+        "en": ["Salah", "Zakat", "Shahada", "Hajj"],
+        "ar": ["الصلاة", "الزكاة", "الشهادة", "الحج"],
+        "ml": ["നമസ്കാരം", "സകാത്ത്", "ശഹാദ", "ഹജ്ജ്"]
+      },
+      "answer": {
+        "en": "Shahada",
+        "ar": "الشهادة",
+        "ml": "ശഹാദ"
+      }
+    },
+    {
+      "question": {
+        "en": "Which battle was the first major battle in Islam?",
+        "ar": "ما هي أول معركة كبيرة في الإسلام؟",
+        "ml": "ഇസ്ലാമിലെ ആദ്യ വലിയ യുദ്ധം ഏതാണ്?"
+      },
+      "options": {
+        "en": ["Battle of Uhud", "Battle of Badr", "Battle of Khandaq", "Battle of Hunayn"],
+        "ar": ["معركة أحد", "معركة بدر", "معركة الخندق", "معركة حنين"],
+        "ml": ["ഉഹുദ് യുദ്ധം", "ബദർ യുദ്ധം", "ഖന്ദഖ് യുദ്ധം", "ഹുനൈൻ യുദ്ധം"]
+      },
+      "answer": {
+        "en": "Battle of Badr",
+        "ar": "معركة بدر",
+        "ml": "ബദർ യുദ്ധം"
+      }
+    },
+    {
+      "question": {
+        "en": "How many Makki Surahs are there in the Qur’an?",
+        "ar": "كم عدد السور المكية في القرآن؟",
+        "ml": "ഖുർആനിൽ എത്ര മക്കീ സൂറകൾ ഉണ്ട്?"
+      },
+      "options": {
+        "en": ["86", "87", "88", "89"],
+        "ar": ["86", "87", "88", "89"],
+        "ml": ["86", "87", "88", "89"]
+      },
+      "answer": {
+        "en": "86",
+        "ar": "86",
+        "ml": "86"
+      }
+    },
+    {
+      "question": {
+        "en": "Which Surah is recited every Friday for protection from Dajjal?",
+        "ar": "ما هي السورة التي تُقرأ كل يوم جمعة للحماية من الدجال؟",
+        "ml": "ദജ്ജാലിൽ നിന്ന് സംരക്ഷണത്തിന് ഓരോ വെള്ളിയാഴ്ചയും വായിക്കുന്ന സൂറത് ഏതാണ്?"
+      },
+      "options": {
+        "en": ["Surah Yasin", "Surah Kahf", "Surah Mulk", "Surah Rahman"],
+        "ar": ["سورة يس", "سورة الكهف", "سورة الملك", "سورة الرحمن"],
+        "ml": ["സൂറത് യാസീൻ", "സൂറത് കഹ്ഫ്", "സൂറത് മുൽക്ക്", "സൂറത് റഹ്മാൻ"]
+      },
+      "answer": {
+        "en": "Surah Kahf",
+        "ar": "سورة الكهف",
+        "ml": "സൂറത് കഹ്ഫ്"
+      }
+    },
+    {
+      "question": {
+        "en": "Which Surah has no Bismillah at its beginning?",
+        "ar": "ما هي السورة التي لا تبدأ بالبسملة؟",
+        "ml": "ബിസ്മില്ലാഹ് കൊണ്ട് ആരംഭിക്കാത്ത സൂറത് ഏതാണ്?"
+      },
+      "options": {
+        "en": ["Surah At-Tawbah", "Surah Al-Anfal", "Surah Al-Mulk", "Surah Yusuf"],
+        "ar": ["سورة التوبة", "سورة الأنفال", "سورة الملك", "سورة يوسف"],
+        "ml": ["സൂറത് തൗബ", "സൂറത് അൽ-അൻഫാൽ", "സൂറത് അൽ-മുൽക്ക്", "സൂറത് യൂസുഫ്"]
+      },
+      "answer": {
+        "en": "Surah At-Tawbah",
+        "ar": "سورة التوبة",
+        "ml": "സൂറത് തൗബ"
+      }
+    },
+    {
+      "question": {
+        "en": "Which Prophet spoke to Allah directly?",
+        "ar": "أي نبي كلمه الله مباشرة؟",
+        "ml": "അള്ളാഹുവിനോട് നേരിട്ട് സംസാരിച്ച പ്രവാചകൻ ആര്?"
+      },
+      "options": {
+        "en": ["Prophet Ibrahim", "Prophet Musa", "Prophet Dawud", "Prophet Isa"],
+        "ar": ["إبراهيم عليه السلام", "موسى عليه السلام", "داود عليه السلام", "عيسى عليه السلام"],
+        "ml": ["ഇബ്രാഹിം", "മൂസാ", "ദാവൂദ്", "ഈസാ"]
+      },
+      "answer": {
+        "en": "Prophet Musa",
+        "ar": "موسى عليه السلام",
+        "ml": "മൂസാ"
+      }
+    },
+    {
+      "question": {
+        "en": "Which Surah was revealed completely at once?",
+        "ar": "أي سورة نزلت كاملة دفعة واحدة؟",
+        "ml": "പൂർണ്ണമായി ഒരേസമയം വെളിപ്പെട്ട സൂറത് ഏതാണ്?"
+      },
+      "options": {
+        "en": ["Surah Al-An'am", "Surah Al-Baqarah", "Surah Al-Imran", "Surah Yusuf"],
+        "ar": ["سورة الأنعام", "سورة البقرة", "سورة آل عمران", "سورة يوسف"],
+        "ml": ["സൂറത് അൽ-അൻആം", "സൂറത് അൽ-ബഖറ", "സൂറത് ആൽ-ഇംറാൻ", "സൂറത് യൂസുഫ്"]
+      },
+      "answer": {
+        "en": "Surah Al-An'am",
+        "ar": "سورة الأنعام",
+        "ml": "സൂറത് അൽ-അൻആം"
+      }
+    },
+    {
+      "question": {
+        "en": "Who was the first muezzin in Islam?",
+        "ar": "من هو أول مؤذن في الإسلام؟",
+        "ml": "ഇസ്ലാമിലെ ആദ്യ മുഅദ്ദിൻ ആര്?"
+      },
+      "options": {
+        "en": ["Bilal ibn Rabah", "Abu Huraira", "Umar ibn al-Khattab", "Ali ibn Abi Talib"],
+        "ar": ["بلال بن رباح رضي الله عنه", "أبو هريرة رضي الله عنه", "عمر بن الخطاب رضي الله عنه", "علي بن أبي طالب رضي الله عنه"],
+        "ml": ["ബിലാൽ ഇബ്‌നു റബാഹ്", "അബൂ ഹുറൈറ", "ഉമർ", "അലി"]
+      },
+      "answer": {
+        "en": "Bilal ibn Rabah",
+        "ar": "بلال بن رباح رضي الله عنه",
+        "ml": "ബിലാൽ ഇബ്‌നു റബാഹ്"
+      }
+    },
+    {
+      "question": {
+        "en": "How many years did the Prophet ﷺ stay in Makkah after Prophethood?",
+        "ar": "كم سنة مكث النبي ﷺ في مكة بعد البعثة؟",
+        "ml": "പ്രവാചകൻ ﷺ പ്രവാചകത്വത്തിന് ശേഷം മക്കയിൽ എത്ര വർഷം കഴിഞ്ഞു?"
+      },
+      "options": {
+        "en": ["10 years", "11 years", "12 years", "13 years"],
+        "ar": ["10 سنوات", "11 سنة", "12 سنة", "13 سنة"],
+        "ml": ["10 വർഷം", "11 വർഷം", "12 വർഷം", "13 വർഷം"]
+      },
+      "answer": {
+        "en": "13 years",
+        "ar": "13 سنة",
+        "ml": "13 വർഷം"
+      }
+    },
+    {
+      "question": {
+        "en": "Which wife of the Prophet ﷺ was known as 'Mother of the Poor'?",
+        "ar": "من هي زوجة النبي ﷺ المعروفة بأم المساكين؟",
+        "ml": "‘പാവങ്ങളുടെ മാതാവ്’ എന്നറിയപ്പെട്ട പ്രവാചകന്റെ ഭാര്യ ആരാണ്?"
+      },
+      "options": {
+        "en": ["Aisha (RA)", "Khadijah (RA)", "Zaynab bint Khuzaymah (RA)", "Hafsa (RA)"],
+        "ar": ["عائشة رضي الله عنها", "خديجة رضي الله عنها", "زينب بنت خزيمة رضي الله عنها", "حفصة رضي الله عنها"],
+        "ml": ["ആയിഷ", "ഖദീജ", "സൈനബ് ബിൻത് ഖുസൈമ", "ഹഫ്സ"]
+      },
+      "answer": {
+        "en": "Zaynab bint Khuzaymah (RA)",
+        "ar": "زينب بنت خزيمة رضي الله عنها",
+        "ml": "സൈനബ് ബിൻത് ഖുസൈമ"
+      }
+    },
+    {
+      "question": {
+        "en": "How many angels questioned a person in the grave?",
+        "ar": "كم عدد الملائكة الذين يسألون العبد في قبره؟",
+        "ml": "കബറിൽ മനുഷ്യനെ ചോദ്യം ചെയ്യുന്ന ദൂതന്മാർ എത്ര?"
+      },
+      "options": {
+        "en": ["One", "Two", "Three", "Four"],
+        "ar": ["واحد", "اثنان", "ثلاثة", "أربعة"],
+        "ml": ["ഒന്ന്", "രണ്ട്", "മൂന്ന്", "നാല്"]
+      },
+      "answer": {
+        "en": "Two",
+        "ar": "اثنان",
+        "ml": "രണ്ട്"
+      }
+    },
+    {
+      "question": {
+        "en": "Which Surah is also called 'Tabarak'?",
+        "ar": "أي سورة تُعرف بسورة تبارك؟",
+        "ml": "‘തബാരക്’ എന്ന് അറിയപ്പെടുന്ന സൂറത് ഏതാണ്?"
+      },
+      "options": {
+        "en": ["Surah Mulk", "Surah Kahf", "Surah Rahman", "Surah Yasin"],
+        "ar": ["سورة الملك", "سورة الكهف", "سورة الرحمن", "سورة يس"],
+        "ml": ["സൂറത് മുൽക്ക്", "സൂറത് കഹ്ഫ്", "സൂറത് റഹ്മാൻ", "സൂറത് യാസീൻ"]
+      },
+      "answer": {
+        "en": "Surah Mulk",
+        "ar": "سورة الملك",
+        "ml": "സൂറത് മുൽക്ക്"
+      }
+    },
+    {
+      "question": {
+        "en": "How many times do Muslims pray each day?",
+        "ar": "كم عدد الصلوات المفروضة في اليوم؟",
+        "ml": "ദിവസത്തിൽ എത്ര ഫർദ് നമസ്കാരങ്ങളുണ്ട്?"
+      },
+      "options": {
+        "en": ["Three", "Four", "Five", "Six"],
+        "ar": ["ثلاث", "أربع", "خمس", "ست"],
+        "ml": ["മൂന്ന്", "നാല്", "അഞ്ച്", "ആറ്"]
+      },
+      "answer": {
+        "en": "Five",
+        "ar": "خمس",
+        "ml": "അഞ്ച്"
+      }
+    }
+    
 ]

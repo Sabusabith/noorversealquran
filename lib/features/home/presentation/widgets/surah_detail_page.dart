@@ -36,7 +36,8 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
     with AutomaticKeepAliveClientMixin {
   final ScrollController _scrollController = ScrollController();
   final List<GlobalKey> _ayahKeys = [];
-
+  bool _isAudioLoading = false;
+  bool _audioInitialized = false;
   late List<List<Ayah>> pagedAyahs;
   late PageController _pageController;
 
@@ -58,6 +59,7 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
   @override
   void initState() {
     super.initState();
+    _audioPlayer = AudioPlayer();
     pagedAyahs = _splitIntoPages(widget.ayahs);
     _ayahKeys.addAll(
       List.generate(widget.ayahs.length, (index) => GlobalKey()),
@@ -65,10 +67,7 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
 
     _loadSavedPage();
     _initialize();
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      await _fetchAyahAudioUrls();
-      _initAudio();
-    });
+
     _loadSavedTranslation();
   }
 
@@ -108,6 +107,22 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
     final startPage = widget.jumpToPage ?? saved ?? 0;
 
     _pageController = PageController(initialPage: startPage);
+    _pageController.addListener(() {
+      if (!_isAudioPlaying) return;
+      if (!_pageController.hasClients) return;
+
+      final page = _pageController.page;
+      if (page == null) return;
+
+      final rounded = page.round();
+      final difference = (page - rounded).abs();
+
+      // Only correct very tiny floating drift
+      // Ignore real page transitions
+      if (difference > 0.0001 && difference < 0.1) {
+        _pageController.jumpToPage(rounded);
+      }
+    });
 
     setState(() {
       _fontsLoaded = true;
@@ -160,6 +175,7 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
   /// Fetch per-Ayah audio URLs using Al-Quran Cloud API
   Future<void> _fetchAyahAudioUrls() async {
     try {
+      setState(() => _isAudioLoading = true);
       final response = await http.get(
         Uri.parse(
           'https://api.alquran.cloud/v1/surah/${widget.surah.number}/ar.alafasy',
@@ -193,9 +209,7 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
     }
   }
 
-  void _initAudio() async {
-    _audioPlayer = AudioPlayer();
-
+  _initAudio() async {
     if (ayahAudioUrls.isEmpty) return;
 
     try {
@@ -222,6 +236,7 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
 
       // Listen to current index to highlight Ayah & auto change page
       _audioPlayer.currentIndexStream.listen((index) {
+        if (!mounted) return;
         if (index != null) {
           currentAyahIndex.value = index;
           if (_isAudioPlaying) {
@@ -232,11 +247,7 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
           // Auto change page based on Ayah
           final newPage = index ~/ 7;
           if (newPage != currentPage) {
-            _pageController.animateToPage(
-              newPage,
-              duration: const Duration(milliseconds: 500),
-              curve: Curves.easeInOut,
-            );
+            _pageController.jumpToPage(newPage);
             setState(() => currentPage = newPage);
           }
         }
@@ -257,10 +268,11 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
       );
 
       // Optional: auto play if jumpToPage is set
-      if (widget.jumpToPage != null) {
-        await _audioPlayer.play();
-        setState(() => _isAudioPlaying = true);
-      }
+      // if (widget.jumpToPage != null) {
+      //   await _audioPlayer.play();
+      //   setState(() => _isAudioPlaying = true);
+      // }
+      // If user pressed play while loading
     } catch (e) {
       print("Error loading audio: $e");
       if (mounted) {
@@ -270,6 +282,10 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
             content: Text("Unable to load audio. Check your connection."),
           ),
         );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isAudioLoading = false);
       }
     }
   }
@@ -342,47 +358,57 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
             icon: const Icon(Icons.info_outline, color: Colors.white, size: 20),
             onPressed: _showSurahInfoDialog,
           ),
-          // IconButton(
-          //   icon: Icon(
-          //     isSaved ? Icons.bookmark : Icons.bookmark_border,
-          //     color: Colors.white,
-          //     size: 20,
-          //   ),
-          //   onPressed: _toggleSavePage,
-          // ),
-          // Play button
+
           IconButton(
-            icon: Icon(
-              _isAudioPlaying ? Icons.pause : Icons.play_arrow,
-              size: 22,
-              color: _isAudioPlaying ? Colors.green : Colors.white,
-            ),
             onPressed: () async {
-              try {
-                if (ayahAudioUrls.isEmpty) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      backgroundColor: Colors.red,
-                      content: Text("Audio not available. Check your network."),
-                    ),
-                  );
-                  return;
+              if (_isAudioLoading) return;
+
+              // If audio not prepared yet
+              if (!_audioInitialized) {
+                setState(() => _isAudioLoading = true);
+
+                try {
+                  await _fetchAyahAudioUrls();
+                  await _initAudio();
+                  _audioInitialized = true;
+                  await _audioPlayer.play();
+                } catch (_) {}
+
+                if (mounted) {
+                  setState(() => _isAudioLoading = false);
                 }
 
-                if (_isAudioPlaying) {
-                  await _audioPlayer.pause();
-                } else {
-                  await _audioPlayer.play();
-                }
-              } catch (e) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    backgroundColor: Colors.red,
-                    content: Text("Unable to play audio. Check your network."),
-                  ),
-                );
+                return;
+              }
+
+              // If already initialized
+              if (_isAudioPlaying) {
+                await _audioPlayer.pause();
+              } else {
+                await _audioPlayer.play();
               }
             },
+            icon: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 200),
+              transitionBuilder: (child, animation) =>
+                  FadeTransition(opacity: animation, child: child),
+              child: _isAudioLoading
+                  ? const SizedBox(
+                      key: ValueKey('loading'),
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : Icon(
+                      _isAudioPlaying ? Icons.pause : Icons.play_arrow,
+                      key: ValueKey(_isAudioPlaying),
+                      size: 22,
+                      color: _isAudioPlaying ? Colors.green : Colors.white,
+                    ),
+            ),
           ),
         ],
       ),
@@ -398,6 +424,7 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
                   setState(() => currentPage = index);
                 },
                 itemCount: pagedAyahs.length,
+
                 itemBuilder: (context, pageIndex) {
                   return ValueListenableBuilder<int>(
                     valueListenable: currentAyahIndex,
@@ -609,11 +636,22 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
     );
 
     if (_scrollController.hasClients) {
-      _scrollController.animateTo(
-        caretOffset.dy - 80, // 🔥 shift up slightly
-        duration: const Duration(milliseconds: 400),
-        curve: Curves.easeInOut,
+      final targetOffset = (caretOffset.dy - 80).clamp(
+        0.0,
+        _scrollController.position.maxScrollExtent,
       );
+
+      final currentOffset = _scrollController.offset;
+      final difference = (targetOffset - currentOffset).abs();
+
+      // Only animate if movement is noticeable
+      if (difference > 20) {
+        _scrollController.animateTo(
+          targetOffset,
+          duration: const Duration(milliseconds: 350),
+          curve: Curves.easeInOut,
+        );
+      }
     }
   }
 
@@ -739,10 +777,15 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
                                           ayahs[i].number - 1,
                                         ) ??
                                         "",
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 17,
                                       height: 1.6,
-                                      color: Colors.blueGrey,
+                                      color:
+                                          (_isAudioPlaying &&
+                                              (ayahStartIndex + i) ==
+                                                  currentAyahIndex.value)
+                                          ? kprimeryColor.withOpacity(.7)
+                                          : Colors.blueGrey,
                                     ),
                                     textAlign: TextAlign.left,
                                   ),
@@ -827,24 +870,6 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildBismillahDivider() {
-    return Row(
-      children: [
-        const Expanded(
-          child: Divider(
-            color: Color(0xFFB7935F),
-            thickness: 1.5,
-            endIndent: 12,
-          ),
-        ),
-        const Icon(Icons.star, size: 18, color: Color(0xFFB7935F)),
-        const Expanded(
-          child: Divider(color: Color(0xFFB7935F), thickness: 1.5, indent: 12),
-        ),
-      ],
     );
   }
 
