@@ -5,6 +5,6 @@ class Ayah {
   Ayah({required this.number, required this.text});
 
   factory Ayah.fromJson(Map<String, dynamic> json) {
-    return Ayah(number: json['number'] as int, text: json['text'] as String);
+    return Ayah(number: json['verse'] as int, text: json['text'] as String);
   }
 }

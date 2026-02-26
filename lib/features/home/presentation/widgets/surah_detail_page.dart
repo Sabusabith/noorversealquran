@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:just_audio/just_audio.dart';
@@ -38,6 +39,7 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
   final List<GlobalKey> _ayahKeys = [];
   bool _isAudioLoading = false;
   bool _audioInitialized = false;
+  bool _isUiVisible = true;
   late List<List<Ayah>> pagedAyahs;
   late PageController _pageController;
 
@@ -55,10 +57,19 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
 
   @override
   bool get wantKeepAlive => true;
+  void _enterFullscreen() {
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+  }
+
+  void _exitFullscreen() {
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+  }
 
   @override
   void initState() {
     super.initState();
+    // _enterFullscreen(); // start immersive
+
     _audioPlayer = AudioPlayer();
     pagedAyahs = _splitIntoPages(widget.ayahs);
     _ayahKeys.addAll(
@@ -214,7 +225,10 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
 
     try {
       // Start from the first Ayah of the page if jumpToPage is provided
-      int startIndex = (widget.jumpToPage ?? 0) * 7; // 7 ayahs per page
+      int startIndex = 0;
+      for (int i = 0; i < currentPage; i++) {
+        startIndex += pagedAyahs[i].length;
+      }
       if (startIndex >= ayahAudioUrls.length) startIndex = 0;
 
       await _audioPlayer.setAudioSource(
@@ -245,7 +259,16 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
             });
           }
           // Auto change page based on Ayah
-          final newPage = index ~/ 7;
+          int total = 0;
+          int newPage = 0;
+
+          for (int i = 0; i < pagedAyahs.length; i++) {
+            total += pagedAyahs[i].length;
+            if (index < total) {
+              newPage = i;
+              break;
+            }
+          }
           if (newPage != currentPage) {
             _pageController.jumpToPage(newPage);
             setState(() => currentPage = newPage);
@@ -295,6 +318,7 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
     _audioPlayer.dispose();
     currentAyahIndex.dispose();
     _scrollController.dispose();
+    // _exitFullscreen(); // restore system UI
 
     super.dispose();
   }
@@ -302,6 +326,7 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    final theme = Theme.of(context);
 
     if (!_fontsLoaded) {
       return Scaffold(
@@ -312,145 +337,253 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
     final showBismillah = widget.surah.number != 9;
 
     return Scaffold(
+      extendBody: true,
+      extendBodyBehindAppBar: true,
       floatingActionButton: Padding(
         padding: const EdgeInsets.only(bottom: 50),
-        child: FloatingActionButton(
-          mini: true,
-          backgroundColor: kprimeryColor,
-          onPressed: () => _toggleSavePage(),
-          child: Icon(
-            isSaved ? Icons.bookmark : Icons.bookmark_border,
-            color: Colors.white,
-            size: 20,
-          ),
-        ),
+        child: _isUiVisible
+            ? FloatingActionButton(
+                mini: true,
+                backgroundColor: theme.primaryColor,
+                onPressed: () => _toggleSavePage(),
+                child: Icon(
+                  isSaved ? Icons.bookmark : Icons.bookmark_border,
+                  color: theme.colorScheme.onPrimary,
+                  size: 20,
+                ),
+              )
+            : null,
       ),
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        toolbarHeight: 80,
-        backgroundColor: kprimeryColor,
-        centerTitle: true,
-        title: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+      backgroundColor: theme.scaffoldBackgroundColor,
+
+      body: GestureDetector(
+        behavior: HitTestBehavior.translucent,
+        onTap: () {
+          setState(() {
+            _isUiVisible = !_isUiVisible;
+          });
+
+          // if (_isUiVisible) {
+          //   _exitFullscreen();
+          // } else {
+          //   _enterFullscreen();
+          // }
+        },
+        child: Stack(
           children: [
-            Text(
-              widget.surah.nameAr,
-              style: GoogleFonts.amiri(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
-            SizedBox(height: 2),
-            Text(
-              widget.surah.tName,
-              style: GoogleFonts.publicSans(
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-                color: Colors.white,
-                letterSpacing: 1.5,
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.info_outline, color: Colors.white, size: 20),
-            onPressed: _showSurahInfoDialog,
-          ),
-
-          IconButton(
-            onPressed: () async {
-              if (_isAudioLoading) return;
-
-              // If audio not prepared yet
-              if (!_audioInitialized) {
-                setState(() => _isAudioLoading = true);
-
-                try {
-                  await _fetchAyahAudioUrls();
-                  await _initAudio();
-                  _audioInitialized = true;
-                  await _audioPlayer.play();
-                } catch (_) {}
-
-                if (mounted) {
-                  setState(() => _isAudioLoading = false);
-                }
-
-                return;
-              }
-
-              // If already initialized
-              if (_isAudioPlaying) {
-                await _audioPlayer.pause();
-              } else {
-                await _audioPlayer.play();
-              }
-            },
-            icon: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 200),
-              transitionBuilder: (child, animation) =>
-                  FadeTransition(opacity: animation, child: child),
-              child: _isAudioLoading
-                  ? const SizedBox(
-                      key: ValueKey('loading'),
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
-                    )
-                  : Icon(
-                      _isAudioPlaying ? Icons.pause : Icons.play_arrow,
-                      key: ValueKey(_isAudioPlaying),
-                      size: 22,
-                      color: _isAudioPlaying ? Colors.green : Colors.white,
+            /// 🔥 FULL SCREEN PAGEVIEW
+            Positioned.fill(
+              child: AnimatedPadding(
+                duration: const Duration(milliseconds: 250),
+                curve: Curves.easeInOut,
+                padding: EdgeInsets.only(
+                  top: _isUiVisible ? 80 : 0,
+                  bottom: _isUiVisible ? 45 : 0,
+                ),
+                child: SafeArea(
+                  bottom: false,
+                  child: Directionality(
+                    textDirection: TextDirection.rtl,
+                    child: PageView.builder(
+                      controller: _pageController,
+                      physics: const ClampingScrollPhysics(),
+                      onPageChanged: (index) async {
+                        setState(() => currentPage = index);
+                      },
+                      itemCount: pagedAyahs.length,
+                      itemBuilder: (context, pageIndex) {
+                        return ValueListenableBuilder<int>(
+                          valueListenable: currentAyahIndex,
+                          builder: (context, highlightedIndex, _) {
+                            return _buildPage(
+                              _isUiVisible,
+                              widget.surah.nameAr,
+                              widget.surah.tName,
+                              pagedAyahs[pageIndex],
+                              showBismillah && pageIndex == 0,
+                              pageIndex,
+                              highlightedIndex,
+                            );
+                          },
+                        );
+                      },
                     ),
-            ),
-          ),
-        ],
-      ),
-      body: Directionality(
-        textDirection: TextDirection.rtl,
-        child: Column(
-          children: [
-            Expanded(
-              child: PageView.builder(
-                controller: _pageController,
-                physics: const ClampingScrollPhysics(),
-                onPageChanged: (index) {
-                  setState(() => currentPage = index);
-                },
-                itemCount: pagedAyahs.length,
-
-                itemBuilder: (context, pageIndex) {
-                  return ValueListenableBuilder<int>(
-                    valueListenable: currentAyahIndex,
-                    builder: (context, highlightedIndex, _) {
-                      return _buildPage(
-                        pagedAyahs[pageIndex],
-                        showBismillah && pageIndex == 0,
-                        pageIndex,
-                        highlightedIndex,
-                      );
-                    },
-                  );
-                },
+                  ),
+                ),
               ),
             ),
-            Container(
-              height: 45,
-              width: double.infinity,
-              color: kprimeryColor,
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              child: Center(
-                child: Text(
-                  "Page ${currentPage + 1} of ${pagedAyahs.length}",
-                  style: GoogleFonts.publicSans(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600,
+
+            /// 🔥 TOP APP BAR OVERLAY
+            AnimatedPositioned(
+              duration: const Duration(milliseconds: 250),
+              curve: Curves.easeInOut,
+              top: _isUiVisible ? 0 : -100,
+              left: 0,
+              right: 0,
+              child: Container(
+                height: 90,
+                color: theme.primaryColor,
+                child: SafeArea(
+                  bottom: false,
+                  child: AppBar(
+                    automaticallyImplyLeading: false,
+                    backgroundColor: Colors.transparent,
+                    elevation: 0,
+                    centerTitle: true,
+                    leading: GestureDetector(
+                      onTap: () {
+                        Navigator.pop(context);
+                      },
+                      child: Icon(
+                        Icons.arrow_back,
+                        color: theme.colorScheme.onPrimary,
+                        size: 18,
+                      ),
+                    ),
+                    title: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          widget.surah.nameAr,
+                          style: GoogleFonts.scheherazadeNew(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: theme.colorScheme.onPrimary,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          widget.surah.tName,
+                          style: GoogleFonts.publicSans(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                            color: theme.colorScheme.onPrimary,
+                            letterSpacing: 1.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                    actions: [
+                      IconButton(
+                        icon: Icon(
+                          Icons.info_outline,
+                          color: theme.colorScheme.onPrimary,
+                          size: 20,
+                        ),
+                        onPressed: _showSurahInfoDialog,
+                      ),
+                      IconButton(
+                        onPressed: () async {
+                          if (_isAudioLoading) return;
+
+                          // If audio not prepared yet
+                          if (!_audioInitialized) {
+                            setState(() => _isAudioLoading = true);
+                            // 🔥 Always seek to current page before playing
+                            int newIndex = 0;
+                            for (int i = 0; i < currentPage; i++) {
+                              newIndex += pagedAyahs[i].length;
+                            }
+                            if (newIndex < ayahAudioUrls.length) {
+                              await _audioPlayer.seek(
+                                Duration.zero,
+                                index: newIndex,
+                              );
+                            }
+
+                            try {
+                              await _fetchAyahAudioUrls();
+                              await _initAudio();
+                              _audioInitialized = true;
+                              await _audioPlayer.play();
+                            } catch (_) {}
+
+                            if (mounted) {
+                              setState(() => _isAudioLoading = false);
+                            }
+
+                            return;
+                          }
+
+                          // If already initialized
+                          if (_isAudioPlaying) {
+                            await _audioPlayer.pause();
+                          } else {
+                            // 🔥 Calculate correct start index for current page
+                            int pageStartIndex = 0;
+                            for (int i = 0; i < currentPage; i++) {
+                              pageStartIndex += pagedAyahs[i].length;
+                            }
+
+                            final currentIndex = _audioPlayer.currentIndex ?? 0;
+
+                            // 🔥 If paused index is NOT inside current page → seek
+                            int pageEndIndex =
+                                pageStartIndex + pagedAyahs[currentPage].length;
+
+                            if (currentIndex < pageStartIndex ||
+                                currentIndex >= pageEndIndex) {
+                              await _audioPlayer.seek(
+                                Duration.zero,
+                                index: pageStartIndex,
+                              );
+                            }
+
+                            await _audioPlayer.play();
+                          }
+                        },
+                        icon: AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 200),
+                          child: _isAudioLoading
+                              ? SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: theme.colorScheme.onPrimary,
+                                  ),
+                                )
+                              : Icon(
+                                  _isAudioPlaying
+                                      ? Icons.pause
+                                      : Icons.play_arrow,
+                                  size: 22,
+                                  color: _isAudioPlaying
+                                      ? Colors.green
+                                      : Colors.white,
+                                ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
+            /// 🔥 BOTTOM PAGE INDICATOR OVERLAY
+            AnimatedPositioned(
+              duration: const Duration(milliseconds: 250),
+              curve: Curves.easeInOut,
+              bottom: _isUiVisible
+                  ? 0
+                  : -(45 + MediaQuery.of(context).padding.bottom),
+              left: 0,
+              right: 0,
+              child: Container(
+                height: 45 + MediaQuery.of(context).padding.bottom,
+                color: theme.primaryColor,
+                child: Padding(
+                  padding: EdgeInsets.only(
+                    bottom: MediaQuery.of(context).padding.bottom,
+                  ),
+                  child: Center(
+                    child: Text(
+                      "Page ${currentPage + 1} of ${pagedAyahs.length}",
+                      style: GoogleFonts.publicSans(
+                        color: theme.colorScheme.onPrimary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -462,17 +595,21 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
   }
 
   void _showSurahInfoDialog() {
+    final theme = Theme.of(context);
+
     showDialog(
       context: context,
       builder: (context) {
         return Dialog(
           shape: RoundedRectangleBorder(
+            side: BorderSide(color: theme.colorScheme.primary.withOpacity(0.2)),
             borderRadius: BorderRadius.circular(20),
           ),
+
           child: Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(20),
-              color: const Color(0xFFFDF8E8), // matches your app tone
+              color: theme.dialogBackgroundColor,
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -482,7 +619,7 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
                   width: double.infinity,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   decoration: BoxDecoration(
-                    color: kprimeryColor,
+                    color: theme.colorScheme.primary,
                     borderRadius: const BorderRadius.vertical(
                       top: Radius.circular(20),
                     ),
@@ -494,15 +631,15 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
                         style: GoogleFonts.amiri(
                           fontSize: 26,
                           fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                          color: theme.colorScheme.onPrimary,
                         ),
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 4),
                       Text(
                         widget.surah.tName,
-                        style: const TextStyle(
-                          color: Colors.white70,
+                        style: TextStyle(
+                          color: theme.colorScheme.onPrimary.withOpacity(0.85),
                           fontSize: 14,
                           letterSpacing: 1.2,
                         ),
@@ -656,29 +793,50 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
   }
 
   Widget _styledInfoRow(String title, String value) {
+    final theme = Theme.of(context);
+
+    // Decide background and text color based on brightness
+    final bool isDark = theme.brightness == Brightness.dark;
+
+    final Color bgColor = isDark
+        ? theme.colorScheme.onSurface.withOpacity(0.12)
+        : theme.colorScheme.primary.withOpacity(0.12);
+
+    final Color textColor = isDark
+        ? theme
+              .colorScheme
+              .onSurface // white-ish
+        : theme.colorScheme.primary; // colored
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
+          /// Title
           Text(
             title,
-            style: const TextStyle(
+            style: TextStyle(
               fontWeight: FontWeight.w600,
-              color: Colors.black87,
+              fontSize: 14,
+              color: theme.colorScheme.onSurface.withOpacity(0.7),
             ),
           ),
+
+          /// Value Badge
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
             decoration: BoxDecoration(
-              color: kprimeryColor.withOpacity(0.1),
+              color: bgColor,
               borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: textColor.withOpacity(0.3)),
             ),
             child: Text(
               value,
               style: TextStyle(
-                color: kprimeryColor,
                 fontWeight: FontWeight.bold,
+                fontSize: 13,
+                color: textColor,
               ),
             ),
           ),
@@ -688,13 +846,20 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
   }
 
   Widget _buildPage(
+    bool isvisible,
+    String surah,
+    String surahEn,
     List<Ayah> ayahs,
     bool showBismillah,
     int pageIndex,
     int highlightedIndex,
   ) {
-    int ayahStartIndex = pageIndex * 7;
+    final theme = Theme.of(context);
 
+    int ayahStartIndex = 0;
+    for (int i = 0; i < pageIndex; i++) {
+      ayahStartIndex += pagedAyahs[i].length;
+    }
     final isTranslationOn =
         widget.translationRepo.translationEnabled &&
         widget.translationRepo.selectedLanguage != null;
@@ -702,12 +867,12 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(1),
-        border: Border.all(color: Color.fromARGB(255, 201, 171, 2), width: 2),
-        color: Colors.white,
+        // border: Border.all(color: Color.fromARGB(255, 201, 171, 2), width: 2),
+        color: theme.scaffoldBackgroundColor,
         // image: DecorationImage(image: AssetImage("assets/images/border1.jpeg")),
       ),
 
-      padding: const EdgeInsets.only(left: 25, right: 25, top: 15, bottom: 1),
+      padding: const EdgeInsets.only(left: 18, right: 18, top: 25, bottom: 1),
       child: Column(
         children: [
           if (showBismillah) _buildBismillah(),
@@ -720,6 +885,21 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
                   ? Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
+                        !isvisible && !showBismillah
+                            ? SizedBox(height: 15)
+                            : SizedBox(),
+                        !isvisible && !showBismillah
+                            ? Text(
+                                "${surah} ${surahEn} ",
+                                style: GoogleFonts.scheherazadeNew(
+                                  color: theme.colorScheme.onSurface,
+                                  fontSize: 16,
+                                ),
+                              )
+                            : SizedBox(),
+                        !isvisible && !showBismillah
+                            ? SizedBox(height: 20)
+                            : SizedBox(),
                         for (int i = 0; i < ayahs.length; i++)
                           Padding(
                             key: _ayahKeys[ayahStartIndex + i],
@@ -735,16 +915,16 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
                                       TextSpan(
                                         text: ayahs[i].text,
                                         style: TextStyle(
-                                          fontSize: 27,
+                                          fontSize: 24,
                                           height: 2.4,
-                                          fontFamily:
-                                              GoogleFonts.amiri().fontFamily,
+
+                                          fontFamily: 'KFGQPCUthmanic',
                                           color:
                                               (_isAudioPlaying &&
                                                   (ayahStartIndex + i) ==
                                                       currentAyahIndex.value)
-                                              ? Colors.green
-                                              : Colors.black,
+                                              ? theme.colorScheme.secondary
+                                              : theme.colorScheme.onSurface,
                                           fontWeight:
                                               (_isAudioPlaying &&
                                                   (ayahStartIndex + i) ==
@@ -757,7 +937,7 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
                                         text: " ﴿${ayahs[i].number}﴾ ",
                                         style: GoogleFonts.amiri(
                                           fontSize: 18,
-                                          color: Colors.orange,
+                                          color: theme.colorScheme.secondary,
                                         ),
                                       ),
                                     ],
@@ -778,17 +958,34 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
                                         ) ??
                                         "",
                                     style: TextStyle(
-                                      fontSize: 17,
-                                      height: 1.6,
+                                      fontSize: 13,
+                                      height: 1.5,
                                       color:
                                           (_isAudioPlaying &&
                                               (ayahStartIndex + i) ==
                                                   currentAyahIndex.value)
-                                          ? kprimeryColor.withOpacity(.7)
-                                          : Colors.blueGrey,
+                                          ? (theme.brightness == Brightness.dark
+                                                ? const Color.fromARGB(
+                                                    255,
+                                                    186,
+                                                    186,
+                                                    3,
+                                                  ) // Highlight color in dark mode
+                                                : theme
+                                                      .colorScheme
+                                                      .primary) // Highlight color in light mode
+                                          : (theme.brightness == Brightness.dark
+                                                ? Colors
+                                                      .white70 // Normal text in dark mode
+                                                : Colors
+                                                      .black87), // Normal text in light mode
                                     ),
                                     textAlign: TextAlign.left,
                                   ),
+                                ),
+                                Divider(
+                                  color: theme.dividerColor,
+                                  thickness: .5,
                                 ),
                               ],
                             ),
@@ -796,40 +993,69 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
                       ],
                     )
                   /// 🔥 THIS IS YOUR ORIGINAL DESIGN (UNCHANGED)
-                  : RichText(
-                      textAlign: TextAlign.justify,
-                      textDirection: TextDirection.rtl,
-                      text: TextSpan(
-                        style: GoogleFonts.amiri(fontSize: 27, height: 2.4),
-                        children: [
-                          for (int i = 0; i < ayahs.length; i++) ...[
-                            TextSpan(
-                              text: ayahs[i].text,
-                              style: GoogleFonts.amiri(
-                                color:
-                                    (_isAudioPlaying &&
-                                        (ayahStartIndex + i) ==
-                                            currentAyahIndex.value)
-                                    ? Colors.green
-                                    : Colors.black,
-                                fontWeight:
-                                    (_isAudioPlaying &&
-                                        (ayahStartIndex + i) ==
-                                            currentAyahIndex.value)
-                                    ? FontWeight.bold
-                                    : FontWeight.normal,
-                              ),
-                            ),
-                            TextSpan(
-                              text: " ﴿${ayahs[i].number}﴾ ",
-                              style: GoogleFonts.amiri(
-                                color: Colors.orange,
-                                fontSize: 20,
-                              ),
-                            ),
+                  : Column(
+                      children: [
+                        !isvisible && !showBismillah
+                            ? SizedBox(height: 15)
+                            : SizedBox(),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            !isvisible && !showBismillah
+                                ? Text(
+                                    "${surah} ${surahEn} ",
+                                    style: GoogleFonts.scheherazadeNew(
+                                      color: theme.colorScheme.primary,
+                                      fontSize: 16,
+                                    ),
+                                  )
+                                : SizedBox(),
                           ],
-                        ],
-                      ),
+                        ),
+                        !isvisible && !showBismillah
+                            ? SizedBox(height: 20)
+                            : SizedBox(),
+                        RichText(
+                          textAlign: TextAlign.justify,
+                          textDirection: TextDirection.rtl,
+                          text: TextSpan(
+                            style: TextStyle(
+                              fontFamily: 'KFGQPCUthmanic',
+                              fontSize: 24,
+                              height: 2.4,
+                            ),
+                            children: [
+                              for (int i = 0; i < ayahs.length; i++) ...[
+                                TextSpan(
+                                  text: ayahs[i].text,
+                                  style: TextStyle(
+                                    fontFamily: 'KFGQPCUthmanic',
+                                    color:
+                                        (_isAudioPlaying &&
+                                            (ayahStartIndex + i) ==
+                                                currentAyahIndex.value)
+                                        ? theme.colorScheme.secondary
+                                        : theme.colorScheme.onSurface,
+                                    fontWeight:
+                                        (_isAudioPlaying &&
+                                            (ayahStartIndex + i) ==
+                                                currentAyahIndex.value)
+                                        ? FontWeight.bold
+                                        : FontWeight.normal,
+                                  ),
+                                ),
+                                TextSpan(
+                                  text: " ﴿${ayahs[i].number}﴾ ",
+                                  style: GoogleFonts.amiri(
+                                    color: theme.colorScheme.secondary,
+                                    fontSize: 20,
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
             ),
           ),
@@ -839,35 +1065,47 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
   }
 
   Widget _buildBismillah() {
+    final theme = Theme.of(context);
+
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 5),
+      padding: const EdgeInsets.symmetric(vertical: 10),
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 20),
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
         decoration: BoxDecoration(
-          image: DecorationImage(
+          boxShadow: [
+            BoxShadow(
+              color: theme.colorScheme.primary.withOpacity(0.35),
+              blurRadius: 20, // softness
+              spreadRadius: 5, // how much it spreads outward
+              offset: const Offset(0, 8), // vertical shadow
+            ),
+          ],
+          // color: theme.primaryColor,
+          image: const DecorationImage(
             image: AssetImage("assets/images/smallbroder.png"),
             fit: BoxFit.cover,
           ),
         ),
+        child: Container(
+          child: Column(
+            children: [
+              const SizedBox(height: 8),
+              Text(
+                "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontFamily: 'KFGQPCUthmanic',
+                  fontSize: 25,
+                  height: 2,
 
-        // color: const Color(0xFFFDF8E8),
-        child: Column(
-          children: [
-            const SizedBox(height: 8),
-            Text(
-              "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ",
-              textAlign: TextAlign.center,
-              style: GoogleFonts.amiri(
-                fontSize: 25,
-                height: 2,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  color: theme.colorScheme.onPrimary,
+                ),
               ),
-            ),
-            const SizedBox(height: 8),
-            // _buildBismillahDivider(),
-          ],
+              const SizedBox(height: 8),
+            ],
+          ),
         ),
       ),
     );

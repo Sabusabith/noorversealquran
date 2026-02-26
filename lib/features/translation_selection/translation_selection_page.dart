@@ -114,6 +114,8 @@ class _TranslationSelectionPageState extends State<TranslationSelectionPage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -139,7 +141,7 @@ class _TranslationSelectionPageState extends State<TranslationSelectionPage> {
                   ),
                 ),
                 Switch(
-                  activeColor: kprimeryColor,
+                  activeColor: theme.primaryColor,
                   value: translationEnabled,
                   onChanged: _toggleTranslation,
                 ),
@@ -209,7 +211,7 @@ class _TranslationSelectionPageState extends State<TranslationSelectionPage> {
                               color: kbgColor,
                               borderRadius: BorderRadius.circular(14),
                               border: Border.all(
-                                color: kprimeryColor.withOpacity(0.4),
+                                color: theme.primaryColor.withOpacity(0.4),
                                 width: 1.2,
                               ),
                             ),
@@ -219,7 +221,7 @@ class _TranslationSelectionPageState extends State<TranslationSelectionPage> {
                           iconStyleData: IconStyleData(
                             icon: Icon(
                               Icons.keyboard_arrow_down_rounded,
-                              color: kprimeryColor,
+                              color: theme.primaryColor,
                             ),
                             iconSize: 24,
                           ),
@@ -228,7 +230,7 @@ class _TranslationSelectionPageState extends State<TranslationSelectionPage> {
                           dropdownStyleData: DropdownStyleData(
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(14),
-                              color: kbgColor,
+                              color: theme.scaffoldBackgroundColor,
                             ),
                             elevation: 4,
                           ),

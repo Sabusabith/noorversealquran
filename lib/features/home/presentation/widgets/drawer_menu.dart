@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:noorversealquran/features/home/presentation/widgets/about/about.dart';
 import 'package:noorversealquran/features/quiz/presentation/pages/quiz_splash/quiz_splash.dart';
 import 'package:noorversealquran/features/quiz/presentation/pages/quizscreen.dart';
+import 'package:noorversealquran/features/settings/settings.dart';
 import 'package:noorversealquran/features/translation_selection/repository/tranlsation_repo.dart';
 import 'package:noorversealquran/features/translation_selection/translation_selection_page.dart';
 
@@ -16,17 +17,17 @@ class DrawerMenu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Drawer(
-      backgroundColor: kbgColor,
+      backgroundColor: theme.scaffoldBackgroundColor,
       child: Column(
         children: [
-          /// Drawer Header
+          /// Header
           Container(
             width: double.infinity,
             padding: const EdgeInsets.symmetric(vertical: 40),
-            decoration: BoxDecoration(
-              color: kprimeryColor, // maroon
-            ),
+            decoration: BoxDecoration(color: theme.colorScheme.primary),
             child: Column(
               children: [
                 Image.asset("assets/images/quran.png", height: 80, width: 80),
@@ -36,13 +37,16 @@ class DrawerMenu extends StatelessWidget {
                   style: GoogleFonts.cormorantGaramond(
                     fontSize: 24,
                     fontWeight: FontWeight.w600,
-                    color: kwhiteColor,
+                    color: theme.colorScheme.onPrimary,
                   ),
                 ),
                 const SizedBox(height: 5),
                 Text(
                   "Illuminate Your Heart",
-                  style: GoogleFonts.poppins(fontSize: 12, color: kgoldColor),
+                  style: GoogleFonts.poppins(
+                    fontSize: 12,
+                    color: theme.colorScheme.secondary,
+                  ),
                 ),
               ],
             ),
@@ -52,10 +56,11 @@ class DrawerMenu extends StatelessWidget {
 
           /// Menu Items
           _drawerItem(
+            context,
             icon: Icons.translate,
             title: "Translation",
             onTap: () async {
-              Navigator.pop(context); // close drawer first
+              Navigator.pop(context);
               await Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -64,12 +69,12 @@ class DrawerMenu extends StatelessWidget {
                   ),
                 ),
               );
-              (context as Element).markNeedsBuild();
             },
           ),
-          _drawerItem(
-            icon: Icons.extension,
 
+          _drawerItem(
+            context,
+            icon: Icons.extension,
             title: "Quiz",
             onTap: () {
               Navigator.push(
@@ -78,13 +83,21 @@ class DrawerMenu extends StatelessWidget {
               );
             },
           ),
+
           _drawerItem(
+            context,
             icon: Icons.settings_outlined,
             title: "Settings",
-            onTap: () {},
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const SettingsPage()),
+              );
+            },
           ),
 
           _drawerItem(
+            context,
             icon: Icons.info_outline,
             title: "About",
             onTap: () {
@@ -99,19 +112,22 @@ class DrawerMenu extends StatelessWidget {
     );
   }
 
-  Widget _drawerItem({
+  Widget _drawerItem(
+    BuildContext context, {
     required IconData icon,
     required String title,
     required VoidCallback onTap,
   }) {
+    final theme = Theme.of(context);
+
     return ListTile(
-      leading: Icon(icon, color: kprimeryColor),
+      leading: Icon(icon, color: theme.colorScheme.onSurface),
       title: Text(
         title,
         style: GoogleFonts.poppins(
           fontSize: 15,
           fontWeight: FontWeight.w500,
-          color: Colors.black87,
+          color: theme.textTheme.bodyMedium?.color,
         ),
       ),
       onTap: onTap,

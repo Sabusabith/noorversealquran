@@ -3,10 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:noorversealquran/features/home/presentation/home.dart';
 import 'package:noorversealquran/features/splash/bloc/splash_bloc.dart';
-import 'package:noorversealquran/features/splash/bloc/splash_event.dart';
 import 'package:noorversealquran/features/splash/bloc/splash_state.dart';
 import 'package:noorversealquran/utils/common/app_colors.dart';
-import 'package:package_info_plus/package_info_plus.dart';
 
 class SplashPage extends StatelessWidget {
   const SplashPage({super.key});
@@ -51,7 +49,8 @@ class SplashPage extends StatelessWidget {
 
                     Text(
                       "السلام عليكم",
-                      style: GoogleFonts.amiri(
+                      style: TextStyle(
+                        fontFamily: 'KFGQPCUthmanic',
                         color: white,
                         fontSize: 36,
                         fontWeight: FontWeight.w700,
