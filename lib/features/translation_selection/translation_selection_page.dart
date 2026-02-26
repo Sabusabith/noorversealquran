@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:noorversealquran/features/translation_selection/repository/tranlsation_repo.dart';
 import 'package:noorversealquran/utils/common/app_colors.dart';
+import 'package:noorversealquran/utils/components/theme.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
 
@@ -115,9 +116,43 @@ class _TranslationSelectionPageState extends State<TranslationSelectionPage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    // Background for dropdown button
+    final buttonBg = isDark
+        ? theme.colorScheme.surface
+        : theme.colorScheme.primary.withOpacity(0.05);
+
+    // Text color
+    final textColor = isDark
+        ? theme.colorScheme.onSurface
+        : theme.colorScheme.primary;
+
+    // Hint color
+    final hintColor = isDark
+        ? theme.colorScheme.onSurface.withOpacity(0.6)
+        : theme.colorScheme.onSurface.withOpacity(0.6);
+
+    // Border color
+    final borderColor = theme.primaryColor.withOpacity(0.4);
 
     return Scaffold(
+      backgroundColor: theme.scaffoldBackgroundColor,
+
       appBar: AppBar(
+        centerTitle: true,
+        leading: GestureDetector(
+          onTap: () {
+            Navigator.pop(context);
+          },
+          child: Icon(
+            Icons.arrow_back,
+            color: theme.colorScheme.onPrimary,
+            size: 18,
+          ),
+        ),
+        backgroundColor: theme.primaryColor,
+        foregroundColor: theme.colorScheme.onPrimary,
         title: Text(
           'Translation Settings',
           style: GoogleFonts.poppins(fontSize: 18),
@@ -137,13 +172,22 @@ class _TranslationSelectionPageState extends State<TranslationSelectionPage> {
                   style: GoogleFonts.catamaran(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: Colors.grey.shade800,
+                    color: theme.colorScheme.onSurface,
                   ),
                 ),
                 Switch(
-                  activeColor: theme.primaryColor,
                   value: translationEnabled,
                   onChanged: _toggleTranslation,
+                  activeColor: theme.colorScheme.secondary, // thumb when ON
+                  activeTrackColor: theme.colorScheme.secondary.withOpacity(
+                    0.4,
+                  ), // track when ON
+                  inactiveThumbColor: isDark
+                      ? Colors.grey.shade400
+                      : Colors.grey.shade800, // thumb when OFF
+                  inactiveTrackColor: isDark
+                      ? Colors.grey.shade700
+                      : Colors.grey.shade200, // track when OFF
                 ),
               ],
             ),
@@ -184,7 +228,7 @@ class _TranslationSelectionPageState extends State<TranslationSelectionPage> {
                             'Choose Language',
                             style: GoogleFonts.publicSans(
                               fontSize: 15,
-                              color: Colors.grey.shade600,
+                              color: hintColor,
                             ),
                           ),
                           items: languages.entries
@@ -195,7 +239,7 @@ class _TranslationSelectionPageState extends State<TranslationSelectionPage> {
                                     e.value,
                                     style: GoogleFonts.publicSans(
                                       fontSize: 15,
-                                      color: Colors.black87,
+                                      color: textColor,
                                     ),
                                   ),
                                 ),
@@ -203,30 +247,29 @@ class _TranslationSelectionPageState extends State<TranslationSelectionPage> {
                               .toList(),
                           onChanged: _selectLanguage,
 
-                          // Button Style
                           buttonStyleData: ButtonStyleData(
                             height: 50,
                             padding: const EdgeInsets.symmetric(horizontal: 8),
                             decoration: BoxDecoration(
-                              color: kbgColor,
+                              color: buttonBg,
                               borderRadius: BorderRadius.circular(14),
                               border: Border.all(
-                                color: theme.primaryColor.withOpacity(0.4),
+                                color: isDark
+                                    ? Colors.grey.shade600
+                                    : theme.primaryColor.withOpacity(0.4),
                                 width: 1.2,
                               ),
                             ),
                           ),
 
-                          // Icon Style
                           iconStyleData: IconStyleData(
                             icon: Icon(
                               Icons.keyboard_arrow_down_rounded,
-                              color: theme.primaryColor,
+                              color: isDark ? Colors.white : theme.primaryColor,
                             ),
                             iconSize: 24,
                           ),
 
-                          // Dropdown Style
                           dropdownStyleData: DropdownStyleData(
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(14),

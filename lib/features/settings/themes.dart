@@ -1,13 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:noorversealquran/core/theme/cubit/theme_cubit.dart';
 import 'package:noorversealquran/utils/components/theme.dart';
 
 class themes extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
-      appBar: AppBar(title: const Text("Settings"), centerTitle: true),
+      appBar: AppBar(
+        title: Text("Theme Settings", style: GoogleFonts.poppins(fontSize: 18)),
+        centerTitle: true,
+        leading: GestureDetector(
+          onTap: () {
+            Navigator.pop(context);
+          },
+          child: Icon(
+            Icons.arrow_back,
+            color: theme.colorScheme.onPrimary,
+            size: 18,
+          ),
+        ),
+      ),
       body: BlocBuilder<ThemeCubit, AppThemeType>(
         builder: (context, currentTheme) {
           return ListView(

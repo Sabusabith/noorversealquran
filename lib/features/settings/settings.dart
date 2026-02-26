@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:noorversealquran/features/settings/themes.dart';
 import 'package:noorversealquran/utils/common/app_colors.dart';
 
@@ -7,8 +8,25 @@ class SettingsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
-      appBar: AppBar(title: const Text("Settings"), centerTitle: true),
+      backgroundColor: theme.scaffoldBackgroundColor,
+
+      appBar: AppBar(
+        title: Text('Settings', style: GoogleFonts.poppins(fontSize: 18)),
+        centerTitle: true,
+        leading: GestureDetector(
+          onTap: () {
+            Navigator.pop(context);
+          },
+          child: Icon(
+            Icons.arrow_back,
+            color: theme.colorScheme.onPrimary,
+            size: 18,
+          ),
+        ),
+      ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: const [
@@ -33,27 +51,50 @@ class SettingsPage extends StatelessWidget {
 ////////////////////////////////////////////////////////////
 
 class _AppearanceSection extends StatelessWidget {
-  const _AppearanceSection();
+  const _AppearanceSection({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return _themeTile(context, 'Themes');
+    final theme = Theme.of(context);
+
+    return _themeTile(context, 'Themes', theme);
   }
 
-  Widget _themeTile(BuildContext context, String title) {
+  Widget _themeTile(BuildContext context, String title, ThemeData theme) {
+    final bool isDark = theme.brightness == Brightness.dark;
+
+    // Dynamic colors based on theme
+    final borderColor = isDark
+        ? theme.colorScheme.onSurface.withOpacity(0.3)
+        : theme.primaryColor.withOpacity(0.4);
+
+    final leadingIconColor = isDark
+        ? theme
+              .colorScheme
+              .secondary // bright accent color in dark mode
+        : theme.primaryColor;
+
+    final trailingIconColor = isDark
+        ? Colors.white70
+        : theme.colorScheme.onSurface.withOpacity(0.7);
+
+    final textColor = theme.colorScheme.onSurface;
+
     return Card(
       elevation: 0,
-
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: BorderSide(),
+        side: BorderSide(color: borderColor, width: 1.2),
       ),
       margin: const EdgeInsets.only(bottom: 10),
+      color: theme.cardColor,
       child: ListTile(
-        title: Text(title),
-
-        leading: Icon(Icons.color_lens),
-        trailing: Icon(Icons.chevron_right),
+        title: Text(
+          title,
+          style: TextStyle(color: textColor, fontWeight: FontWeight.w600),
+        ),
+        leading: Icon(Icons.color_lens, color: leadingIconColor),
+        trailing: Icon(Icons.chevron_right, color: trailingIconColor),
         onTap: () => Navigator.push(
           context,
           MaterialPageRoute(builder: (_) => themes()),
