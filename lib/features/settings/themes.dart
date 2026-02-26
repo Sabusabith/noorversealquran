@@ -55,13 +55,6 @@ class themes extends StatelessWidget {
 
               _themeCard(
                 context,
-                title: "Slate Grey",
-                subtitle: "Neat & Professional",
-                theme: AppThemeType.slateGrey,
-                currentTheme: currentTheme,
-              ),
-              _themeCard(
-                context,
                 title: "Sand Beige",
                 subtitle: "Soft & Peaceful",
                 theme: AppThemeType.sandBeige,

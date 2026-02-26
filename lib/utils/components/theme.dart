@@ -7,7 +7,6 @@ enum AppThemeType {
   sandBeige,
   royalBlue,
   softDark,
-  slateGrey,
 }
 
 class AppThemes {
@@ -38,7 +37,7 @@ class AppThemes {
           ),
           colorScheme: const ColorScheme.light(
             primary: Color(0xFF0B3D2E),
-            secondary: Color(0xFFD4AF37),
+            secondary: Color.fromARGB(255, 6, 124, 69),
           ),
         );
       case AppThemeType.sandBeige:
@@ -103,19 +102,6 @@ class AppThemes {
             surface: Color(0xFF1E1E1E),
             onPrimary: Colors.white,
             onSurface: Colors.white70,
-          ),
-        );
-      case AppThemeType.slateGrey:
-        return ThemeData(
-          primaryColor: const Color(0xFF2E3440),
-          scaffoldBackgroundColor: const Color(0xFFF4F6F8),
-          appBarTheme: const AppBarTheme(
-            backgroundColor: Color(0xFF2E3440),
-            foregroundColor: Colors.white,
-          ),
-          colorScheme: const ColorScheme.light(
-            primary: Color(0xFF2E3440),
-            secondary: Color(0xFF6C7A89),
           ),
         );
     }

@@ -596,7 +596,11 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
 
   void _showSurahInfoDialog() {
     final theme = Theme.of(context);
+    final bool isDark = theme.brightness == Brightness.dark;
 
+    final Color bgColor = isDark
+        ? theme.colorScheme.onSurface.withOpacity(0.20)
+        : theme.colorScheme.primary.withOpacity(0.20);
     showDialog(
       context: context,
       builder: (context) {
@@ -676,7 +680,7 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
                   padding: const EdgeInsets.only(bottom: 15),
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: kprimeryColor,
+                      backgroundColor: bgColor,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(30),
                       ),
@@ -860,6 +864,7 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
     for (int i = 0; i < pageIndex; i++) {
       ayahStartIndex += pagedAyahs[i].length;
     }
+
     final isTranslationOn =
         widget.translationRepo.translationEnabled &&
         widget.translationRepo.selectedLanguage != null;
@@ -867,11 +872,8 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(1),
-        // border: Border.all(color: Color.fromARGB(255, 201, 171, 2), width: 2),
         color: theme.scaffoldBackgroundColor,
-        // image: DecorationImage(image: AssetImage("assets/images/border1.jpeg")),
       ),
-
       padding: const EdgeInsets.only(left: 18, right: 18, top: 25, bottom: 1),
       child: Column(
         children: [
@@ -885,141 +887,136 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
                   ? Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        !isvisible && !showBismillah
-                            ? SizedBox(height: 15)
-                            : SizedBox(),
-                        !isvisible && !showBismillah
-                            ? Text(
-                                "${surah} ${surahEn} ",
+                        if (!isvisible && !showBismillah)
+                          const SizedBox(height: 15),
+                        if (!isvisible && !showBismillah)
+                          Text(
+                            "$surah $surahEn",
+                            style: GoogleFonts.scheherazadeNew(
+                              color: theme.colorScheme.onSurface,
+                              fontSize: 16,
+                            ),
+                          ),
+                        if (!isvisible && !showBismillah)
+                          const SizedBox(height: 20),
+
+                        /// ===============================
+                        /// TRANSLATION MODE
+                        /// ===============================
+                        for (int i = 0; i < ayahs.length; i++) ...[
+                          Builder(
+                            builder: (context) {
+                              bool isCurrentAyah =
+                                  _isAudioPlaying &&
+                                  (ayahStartIndex + i) ==
+                                      currentAyahIndex.value;
+
+                              return Container(
+                                key: _ayahKeys[ayahStartIndex + i],
+                                margin: const EdgeInsets.only(bottom: 10),
+                                padding: const EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  color: isCurrentAyah
+                                      ? theme.colorScheme.secondary.withOpacity(
+                                          0.12,
+                                        )
+                                      : Colors.transparent,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.stretch,
+                                  children: [
+                                    /// Arabic
+                                    Text.rich(
+                                      TextSpan(
+                                        children: [
+                                          TextSpan(
+                                            text: ayahs[i].text,
+                                            style: TextStyle(
+                                              fontSize: 24,
+                                              height: 2.4,
+                                              fontFamily: 'KFGQPCUthmanic',
+                                              color:
+                                                  theme.colorScheme.onSurface,
+                                              fontWeight: isCurrentAyah
+                                                  ? FontWeight.bold
+                                                  : FontWeight.w300,
+                                            ),
+                                          ),
+                                          TextSpan(
+                                            text: " ﴿${ayahs[i].number}﴾ ",
+                                            style: GoogleFonts.amiri(
+                                              fontSize: 18,
+                                              color:
+                                                  theme.colorScheme.secondary,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      textAlign: TextAlign.justify,
+                                      textDirection: TextDirection.rtl,
+                                    ),
+
+                                    const SizedBox(height: 6),
+
+                                    /// Translation
+                                    Directionality(
+                                      textDirection: TextDirection.ltr,
+                                      child: Text(
+                                        widget.translationRepo.getTranslation(
+                                              widget.surah.number,
+                                              ayahs[i].number - 1,
+                                            ) ??
+                                            "",
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          height: 1.5,
+                                          color: theme.colorScheme.onSurface,
+                                          fontWeight: isCurrentAyah
+                                              ? FontWeight.w600
+                                              : FontWeight.normal,
+                                        ),
+                                        textAlign: TextAlign.left,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          ),
+                          Divider(color: theme.dividerColor, thickness: .5),
+                        ],
+                      ],
+                    )
+                  /// ===============================
+                  /// NON TRANSLATION MODE
+                  /// ===============================
+                  : Column(
+                      children: [
+                        if (!isvisible && !showBismillah)
+                          const SizedBox(height: 15),
+                        if (!isvisible && !showBismillah)
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: [
+                              Text(
+                                "$surah $surahEn",
                                 style: GoogleFonts.scheherazadeNew(
                                   color: theme.colorScheme.onSurface,
                                   fontSize: 16,
                                 ),
-                              )
-                            : SizedBox(),
-                        !isvisible && !showBismillah
-                            ? SizedBox(height: 20)
-                            : SizedBox(),
-                        for (int i = 0; i < ayahs.length; i++)
-                          Padding(
-                            key: _ayahKeys[ayahStartIndex + i],
-
-                            padding: const EdgeInsets.only(bottom: 18),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [
-                                /// Arabic (same highlight logic)
-                                Text.rich(
-                                  TextSpan(
-                                    children: [
-                                      TextSpan(
-                                        text: ayahs[i].text,
-                                        style: TextStyle(
-                                          fontSize: 24,
-                                          height: 2.4,
-
-                                          fontFamily: 'KFGQPCUthmanic',
-                                          color:
-                                              (_isAudioPlaying &&
-                                                  (ayahStartIndex + i) ==
-                                                      currentAyahIndex.value)
-                                              ? theme.colorScheme.secondary
-                                              : theme.colorScheme.onSurface,
-                                          fontWeight:
-                                              (_isAudioPlaying &&
-                                                  (ayahStartIndex + i) ==
-                                                      currentAyahIndex.value)
-                                              ? FontWeight.bold
-                                              : FontWeight.normal,
-                                        ),
-                                      ),
-                                      TextSpan(
-                                        text: " ﴿${ayahs[i].number}﴾ ",
-                                        style: GoogleFonts.amiri(
-                                          fontSize: 18,
-                                          color: theme.colorScheme.secondary,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  textAlign: TextAlign.justify,
-                                  textDirection: TextDirection.rtl,
-                                ),
-
-                                const SizedBox(height: 6),
-
-                                /// Translation (clean style)
-                                Directionality(
-                                  textDirection: TextDirection.ltr,
-                                  child: Text(
-                                    widget.translationRepo.getTranslation(
-                                          widget.surah.number,
-                                          ayahs[i].number - 1,
-                                        ) ??
-                                        "",
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      height: 1.5,
-                                      color:
-                                          (_isAudioPlaying &&
-                                              (ayahStartIndex + i) ==
-                                                  currentAyahIndex.value)
-                                          ? (theme.brightness == Brightness.dark
-                                                ? const Color.fromARGB(
-                                                    255,
-                                                    186,
-                                                    186,
-                                                    3,
-                                                  ) // Highlight color in dark mode
-                                                : theme
-                                                      .colorScheme
-                                                      .primary) // Highlight color in light mode
-                                          : (theme.brightness == Brightness.dark
-                                                ? Colors
-                                                      .white70 // Normal text in dark mode
-                                                : Colors
-                                                      .black87), // Normal text in light mode
-                                    ),
-                                    textAlign: TextAlign.left,
-                                  ),
-                                ),
-                                Divider(
-                                  color: theme.dividerColor,
-                                  thickness: .5,
-                                ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
-                      ],
-                    )
-                  /// 🔥 THIS IS YOUR ORIGINAL DESIGN (UNCHANGED)
-                  : Column(
-                      children: [
-                        !isvisible && !showBismillah
-                            ? SizedBox(height: 15)
-                            : SizedBox(),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            !isvisible && !showBismillah
-                                ? Text(
-                                    "${surah} ${surahEn} ",
-                                    style: GoogleFonts.scheherazadeNew(
-                                      color: theme.colorScheme.primary,
-                                      fontSize: 16,
-                                    ),
-                                  )
-                                : SizedBox(),
-                          ],
-                        ),
-                        !isvisible && !showBismillah
-                            ? SizedBox(height: 20)
-                            : SizedBox(),
+                        if (!isvisible && !showBismillah)
+                          const SizedBox(height: 20),
+
                         RichText(
                           textAlign: TextAlign.justify,
                           textDirection: TextDirection.rtl,
                           text: TextSpan(
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontFamily: 'KFGQPCUthmanic',
                               fontSize: 24,
                               height: 2.4,
@@ -1029,21 +1026,30 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
                                 TextSpan(
                                   text: ayahs[i].text,
                                   style: TextStyle(
+                                    backgroundColor:
+                                        (_isAudioPlaying &&
+                                            (ayahStartIndex + i) ==
+                                                currentAyahIndex.value)
+                                        ? theme.colorScheme.secondary
+                                              .withOpacity(0.25)
+                                        : Colors.transparent,
                                     fontFamily: 'KFGQPCUthmanic',
                                     color:
                                         (_isAudioPlaying &&
                                             (ayahStartIndex + i) ==
                                                 currentAyahIndex.value)
-                                        ? theme.colorScheme.secondary
+                                        ? theme.colorScheme.onSurface
                                         : theme.colorScheme.onSurface,
                                     fontWeight:
                                         (_isAudioPlaying &&
                                             (ayahStartIndex + i) ==
                                                 currentAyahIndex.value)
                                         ? FontWeight.bold
-                                        : FontWeight.normal,
+                                        : FontWeight.w300,
                                   ),
                                 ),
+
+                                /// Ayah Number — ALWAYS Accent Color
                                 TextSpan(
                                   text: " ﴿${ayahs[i].number}﴾ ",
                                   style: GoogleFonts.amiri(
