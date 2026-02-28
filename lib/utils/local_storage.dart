@@ -4,6 +4,17 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class LocalStorage {
   static const String _bookmarkKey = 'bookmarks';
+  static const String _reciterKey = "reciter";
+
+  static Future<void> saveReciter(String reciterCode) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_reciterKey, reciterCode);
+  }
+
+  static Future<String> getReciter() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_reciterKey) ?? "ar.alafasy";
+  }
 
   static Future<void> saveBookmark(int surah, int page) async {
     final prefs = await SharedPreferences.getInstance();

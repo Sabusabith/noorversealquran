@@ -8,6 +8,7 @@ import 'package:just_audio/just_audio.dart';
 import 'package:noorversealquran/data/model/ayah_model.dart';
 import 'package:noorversealquran/features/home/data/model/surah_model.dart.dart';
 import 'package:noorversealquran/features/home/presentation/widgets/menusheet.dart';
+import 'package:noorversealquran/features/home/presentation/widgets/reciters.dart';
 import 'package:noorversealquran/features/settings/themes.dart';
 import 'package:noorversealquran/features/translation_selection/repository/tranlsation_repo.dart';
 import 'package:noorversealquran/features/translation_selection/translation_selection_page.dart';
@@ -216,14 +217,20 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
   Future<void> _fetchAyahAudioUrls() async {
     try {
       setState(() => _isAudioLoading = true);
+
+      // get saved reciter
+      String reciter = await LocalStorage.getReciter();
+
       final response = await http.get(
         Uri.parse(
-          'https://api.alquran.cloud/v1/surah/${widget.surah.number}/ar.alafasy',
+          'https://api.alquran.cloud/v1/surah/${widget.surah.number}/$reciter',
         ),
       );
       if (response.statusCode != 200) throw Exception('Failed to load');
 
       final data = jsonDecode(response.body);
+      final returned = data['data']['edition']['identifier'];
+      print('Requested: $reciter | Returned: $returned');
       final ayahsData = data['data']['ayahs'] as List;
 
       ayahAudioUrls = ayahsData.map((a) => a['audio'] as String).toList();
@@ -342,6 +349,161 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
     }
   }
 
+  void _showReciterSelection() async {
+    final selected = await LocalStorage.getReciter();
+    final theme = Theme.of(context);
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (_) {
+        final screenHeight = MediaQuery.of(context).size.height;
+
+        return FractionallySizedBox(
+          heightFactor: 0.9, // 🔥 Max 90% of screen
+          child: Container(
+            padding: const EdgeInsets.only(top: 12),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.surface,
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(28),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.25),
+                  blurRadius: 25,
+                ),
+              ],
+            ),
+            child: SafeArea(
+              top: false,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 25),
+                child: Column(
+                  children: [
+                    /// 🔘 Handle Bar
+                    Container(
+                      width: 40,
+                      height: 4,
+                      margin: const EdgeInsets.only(bottom: 18),
+                      decoration: BoxDecoration(
+                        color: theme.dividerColor,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+
+                    /// 🔤 Title
+                    Text(
+                      "Select Reciter",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: theme.colorScheme.onSurface,
+                      ),
+                    ),
+
+                    const SizedBox(height: 18),
+
+                    /// 🔥 Scrollable List
+                    Expanded(
+                      child: ListView(
+                        physics: const BouncingScrollPhysics(),
+                        children: reciters.map((reciter) {
+                          final isSelected = reciter["code"] == selected;
+
+                          final tileColor = isSelected
+                              ? theme.colorScheme.primaryContainer
+                              : theme.colorScheme.surfaceContainerHigh;
+
+                          final textColor = isSelected
+                              ? theme.colorScheme.onPrimaryContainer
+                              : theme.colorScheme.onSurface;
+
+                          final iconColor = isSelected
+                              ? theme.colorScheme.onPrimaryContainer
+                              : theme.colorScheme.onSurfaceVariant;
+
+                          final borderColor = isSelected
+                              ? theme.colorScheme.primary
+                              : theme.colorScheme.outlineVariant;
+
+                          return InkWell(
+                            borderRadius: BorderRadius.circular(16),
+                            onTap: () async {
+                              await LocalStorage.saveReciter(reciter["code"]!);
+
+                              _audioInitialized = false;
+                              _isAudioPlaying = false;
+                              await _audioPlayer.stop();
+                              ayahAudioUrls.clear();
+
+                              Navigator.pop(context);
+                              setState(() {});
+                            },
+                            child: Container(
+                              margin: const EdgeInsets.only(bottom: 12),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 14,
+                              ),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(16),
+                                color: tileColor,
+                                border: Border.all(
+                                  color: borderColor,
+                                  width: isSelected ? 1.8 : 1,
+                                ),
+                              ),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.record_voice_over,
+                                    color: iconColor,
+                                    size: 22,
+                                  ),
+                                  const SizedBox(width: 16),
+
+                                  Expanded(
+                                    child: Text(
+                                      reciter["name"]!,
+                                      style: TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w600,
+                                        color: textColor,
+                                      ),
+                                    ),
+                                  ),
+
+                                  if (isSelected)
+                                    Icon(
+                                      Icons.check_circle,
+                                      color: theme.colorScheme.primary,
+                                    )
+                                  else
+                                    Icon(
+                                      Icons.arrow_forward_ios,
+                                      size: 14,
+                                      color: theme.colorScheme.onSurface
+                                          .withOpacity(0.5),
+                                    ),
+                                ],
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   void _showReaderMenu() {
     showModalBottomSheet(
       context: context,
@@ -361,9 +523,7 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
               ),
             );
           },
-          onChangeFontSize: () {
-            // TODO: Add font size dialog
-          },
+          onSelectReciter: () => _showReciterSelection(),
           onChangeTheme: () {
             Navigator.push(
               context,
@@ -536,98 +696,106 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
                       ],
                     ),
                     actions: [
-                      IconButton(
-                        icon: isSaved
-                            ? Icon(
-                                Icons.bookmark,
-                                color: !isSaved
-                                    ? theme.colorScheme.onPrimary
-                                    : Colors.red,
-                                size: 20,
-                              )
-                            : Icon(Icons.bookmark_border),
-                        onPressed: _toggleSavePage,
-                      ),
-                      IconButton(
-                        onPressed: () async {
-                          if (_isAudioLoading) return;
-
-                          // If audio not prepared yet
-                          if (!_audioInitialized) {
-                            setState(() => _isAudioLoading = true);
-                            // 🔥 Always seek to current page before playing
-                            int newIndex = 0;
-                            for (int i = 0; i < currentPage; i++) {
-                              newIndex += pagedAyahs[i].length;
-                            }
-                            if (newIndex < ayahAudioUrls.length) {
-                              await _audioPlayer.seek(
-                                Duration.zero,
-                                index: newIndex,
-                              );
-                            }
-
-                            try {
-                              await _fetchAyahAudioUrls();
-                              await _initAudio();
-                              _audioInitialized = true;
-                              await _audioPlayer.play();
-                            } catch (_) {}
-
-                            if (mounted) {
-                              setState(() => _isAudioLoading = false);
-                            }
-
-                            return;
-                          }
-
-                          // If already initialized
-                          if (_isAudioPlaying) {
-                            await _audioPlayer.pause();
-                          } else {
-                            // 🔥 Calculate correct start index for current page
-                            int pageStartIndex = 0;
-                            for (int i = 0; i < currentPage; i++) {
-                              pageStartIndex += pagedAyahs[i].length;
-                            }
-
-                            final currentIndex = _audioPlayer.currentIndex ?? 0;
-
-                            // 🔥 If paused index is NOT inside current page → seek
-                            int pageEndIndex =
-                                pageStartIndex + pagedAyahs[currentPage].length;
-
-                            if (currentIndex < pageStartIndex ||
-                                currentIndex >= pageEndIndex) {
-                              await _audioPlayer.seek(
-                                Duration.zero,
-                                index: pageStartIndex,
-                              );
-                            }
-
-                            await _audioPlayer.play();
-                          }
-                        },
-                        icon: AnimatedSwitcher(
-                          duration: const Duration(milliseconds: 200),
-                          child: _isAudioLoading
-                              ? SizedBox(
-                                  width: 20,
-                                  height: 20,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    color: theme.colorScheme.onPrimary,
-                                  ),
+                      Transform(
+                        transform: Matrix4.translationValues(14, 0, 0),
+                        child: IconButton(
+                          icon: isSaved
+                              ? Icon(
+                                  Icons.bookmark,
+                                  color: !isSaved
+                                      ? theme.colorScheme.onPrimary
+                                      : Colors.red,
+                                  size: 19,
                                 )
-                              : Icon(
-                                  _isAudioPlaying
-                                      ? Icons.pause
-                                      : Icons.play_arrow,
-                                  size: 22,
-                                  color: _isAudioPlaying
-                                      ? Colors.green
-                                      : Colors.white,
-                                ),
+                              : Icon(Icons.bookmark_border, size: 19),
+                          onPressed: _toggleSavePage,
+                        ),
+                      ),
+                      Transform(
+                        transform: Matrix4.translationValues(10, 0, 0),
+                        child: IconButton(
+                          onPressed: () async {
+                            if (_isAudioLoading) return;
+
+                            // If audio not prepared yet
+                            if (!_audioInitialized) {
+                              setState(() => _isAudioLoading = true);
+                              // 🔥 Always seek to current page before playing
+                              int newIndex = 0;
+                              for (int i = 0; i < currentPage; i++) {
+                                newIndex += pagedAyahs[i].length;
+                              }
+                              if (newIndex < ayahAudioUrls.length) {
+                                await _audioPlayer.seek(
+                                  Duration.zero,
+                                  index: newIndex,
+                                );
+                              }
+
+                              try {
+                                await _fetchAyahAudioUrls();
+                                await _initAudio();
+                                _audioInitialized = true;
+                                await _audioPlayer.play();
+                              } catch (_) {}
+
+                              if (mounted) {
+                                setState(() => _isAudioLoading = false);
+                              }
+
+                              return;
+                            }
+
+                            // If already initialized
+                            if (_isAudioPlaying) {
+                              await _audioPlayer.pause();
+                            } else {
+                              // 🔥 Calculate correct start index for current page
+                              int pageStartIndex = 0;
+                              for (int i = 0; i < currentPage; i++) {
+                                pageStartIndex += pagedAyahs[i].length;
+                              }
+
+                              final currentIndex =
+                                  _audioPlayer.currentIndex ?? 0;
+
+                              // 🔥 If paused index is NOT inside current page → seek
+                              int pageEndIndex =
+                                  pageStartIndex +
+                                  pagedAyahs[currentPage].length;
+
+                              if (currentIndex < pageStartIndex ||
+                                  currentIndex >= pageEndIndex) {
+                                await _audioPlayer.seek(
+                                  Duration.zero,
+                                  index: pageStartIndex,
+                                );
+                              }
+
+                              await _audioPlayer.play();
+                            }
+                          },
+                          icon: AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 200),
+                            child: _isAudioLoading
+                                ? SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: theme.colorScheme.onPrimary,
+                                    ),
+                                  )
+                                : Icon(
+                                    _isAudioPlaying
+                                        ? Icons.pause
+                                        : Icons.play_arrow,
+                                    size: 22,
+                                    color: _isAudioPlaying
+                                        ? Colors.green
+                                        : Colors.white,
+                                  ),
+                          ),
                         ),
                       ),
 

@@ -4,15 +4,16 @@ class ReaderMenuBottomSheet extends StatelessWidget {
   final bool isSaved;
   final VoidCallback onToggleBookmark;
   final VoidCallback onToggleTranslation;
-  final VoidCallback onChangeFontSize;
   final VoidCallback onChangeTheme;
+  final VoidCallback onSelectReciter; // ✅ New callback for reciter
 
   const ReaderMenuBottomSheet({
     super.key,
+    required this.onSelectReciter, // add here
+
     required this.isSaved,
     required this.onToggleBookmark,
     required this.onToggleTranslation,
-    required this.onChangeFontSize,
     required this.onChangeTheme,
   });
 
@@ -63,9 +64,9 @@ class ReaderMenuBottomSheet extends StatelessWidget {
 
               _menuItem(
                 context,
-                icon: Icons.text_fields,
-                title: "Change Font Size",
-                onTap: onChangeFontSize,
+                icon: Icons.record_voice_over,
+                title: "Select Reciter",
+                onTap: onSelectReciter, // ✅ Reciter action
               ),
 
               _menuItem(
