@@ -1,10 +1,12 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:noorversealquran/utils/components/theme.dart';
+import 'package:noorversealquran/utils/components/theme_local_storage.dart';
 
 class ThemeCubit extends Cubit<AppThemeType> {
-  ThemeCubit() : super(AppThemeType.maroonGold);
+  ThemeCubit(AppThemeType initialTheme) : super(initialTheme);
 
-  void changeTheme(AppThemeType type) {
+  Future<void> changeTheme(AppThemeType type) async {
     emit(type);
+    await ThemeLocalStorage.saveTheme(type);
   }
 }

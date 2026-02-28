@@ -9,10 +9,6 @@ import 'package:noorversealquran/utils/common/app_colors.dart';
 class SplashPage extends StatelessWidget {
   const SplashPage({super.key});
 
-  static const Color primary = Color(0xFF6D001A);
-  static const Color gold = Color(0xFFD4AF37);
-  static const Color white = Color(0xFFFFFFFF);
-
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<SplashBloc, SplashState>(
@@ -25,6 +21,13 @@ class SplashPage extends StatelessWidget {
         }
       },
       builder: (context, state) {
+        final theme = Theme.of(context);
+        final primary = theme.colorScheme.primary;
+        final isDark = theme.brightness == Brightness.dark;
+
+        final secondary = theme.colorScheme.secondary;
+        final onPrimary = theme.colorScheme.onPrimary;
+
         String versionText = "";
         if (state is SplashLoaded) {
           versionText = state.version;
@@ -51,7 +54,7 @@ class SplashPage extends StatelessWidget {
                       "السلام عليكم",
                       style: TextStyle(
                         fontFamily: 'KFGQPCUthmanic',
-                        color: white,
+                        color: onPrimary,
                         fontSize: 36,
                         fontWeight: FontWeight.w700,
                       ),
@@ -62,7 +65,9 @@ class SplashPage extends StatelessWidget {
                     Text(
                       "NoorVerse – Al Quran",
                       style: GoogleFonts.sourceSerif4(
-                        color: gold.withOpacity(0.9),
+                        color: isDark
+                            ? onPrimary.withOpacity(0.90)
+                            : secondary.withOpacity(0.9),
                         fontSize: 18,
                       ),
                     ),
@@ -79,7 +84,7 @@ class SplashPage extends StatelessWidget {
                   child: Text(
                     versionText,
                     style: GoogleFonts.poppins(
-                      color: kwhiteColor.withOpacity(0.4),
+                      color: onPrimary.withOpacity(0.4),
                       fontSize: 12,
                     ),
                   ),

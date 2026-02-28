@@ -97,7 +97,7 @@ class _AppearanceSection extends StatelessWidget {
         trailing: Icon(Icons.chevron_right, color: trailingIconColor),
         onTap: () => Navigator.push(
           context,
-          MaterialPageRoute(builder: (_) => themes()),
+          MaterialPageRoute(builder: (_) => Themes()),
         ),
       ),
     );

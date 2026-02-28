@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:noorversealquran/features/settings/bookmark.dart';
 import 'package:noorversealquran/features/translation_selection/repository/tranlsation_repo.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:noorversealquran/features/home/presentation/widgets/surah_detail_page.dart';
@@ -133,44 +134,37 @@ class _HomeViewState extends State<HomeView> {
           },
         ),
         actions: [
-          // Last saved page button
-          if (lastSavedSurahNumber != null && lastSavedPage != null)
-            IconButton(
-              icon: const Icon(Icons.bookmark, color: Colors.yellow),
-              tooltip: "Go to last saved page",
-              onPressed: () async {
-                final blocState = context.read<HomeBloc>().state;
-                if (blocState is HomeLoaded) {
-                  final surah = blocState.filteredSurahs.firstWhere(
-                    (s) => s.number == lastSavedSurahNumber,
-                    orElse: () => blocState.filteredSurahs.first,
-                  );
+          BlocBuilder<HomeBloc, HomeState>(
+            builder: (context, state) {
+              if (state is! HomeLoaded) {
+                return const SizedBox();
+              }
 
+              return IconButton(
+                icon: const Icon(Icons.bookmark, color: Colors.yellow),
+                tooltip: "Open Bookmarks",
+                onPressed: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => SurahDetailsPage(
-                        surah: surah,
-                        ayahs: blocState.quran[surah.number] ?? [],
-                        jumpToPage: lastSavedPage,
-                        translationRepo: translationRepos, // <-- pass it here
-
-                        onPageSaved: (page) async {
-                          // Replace old saved page
-                          await _saveLastPage(surah.number, page);
-                        },
+                      builder: (_) => BookmarkScreen(
+                        surahList: state.filteredSurahs,
+                        quran: state.quran, // ✅ direct map
+                        translationRepo: translationRepos,
                       ),
                     ),
                   );
-                }
-              },
-            ),
+                },
+              );
+            },
+          ),
 
           BlocBuilder<HomeBloc, HomeState>(
             builder: (context, state) {
               bool isSearching = state is HomeLoaded
                   ? state.isSearching
                   : false;
+
               return IconButton(
                 icon: Icon(
                   isSearching ? Icons.close : CupertinoIcons.search,
@@ -180,6 +174,7 @@ class _HomeViewState extends State<HomeView> {
               );
             },
           ),
+
           const SizedBox(width: 10),
         ],
       ),

@@ -1,20 +1,61 @@
+import 'dart:convert';
+
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LocalStorage {
-  static const _keySurah = 'last_surah';
-  static const _keyAyah = 'last_ayah';
+  static const String _bookmarkKey = 'bookmarks';
 
-  static Future<void> saveLastRead(int surah, int ayah) async {
+  static Future<void> saveBookmark(int surah, int page) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt(_keySurah, surah);
-    await prefs.setInt(_keyAyah, ayah);
+    final List<String> existing = prefs.getStringList(_bookmarkKey) ?? [];
+
+    final newBookmark = {'surah': surah, 'page': page};
+
+    // Remove duplicate if exists
+    existing.removeWhere((item) {
+      final decoded = jsonDecode(item);
+      return decoded['surah'] == surah && decoded['page'] == page;
+    });
+
+    // Add new bookmark
+    existing.add(jsonEncode(newBookmark));
+
+    // 🔥 Keep only last 3 bookmarks
+    while (existing.length > 3) {
+      existing.removeAt(0); // removes oldest
+    }
+
+    await prefs.setStringList(_bookmarkKey, existing);
   }
 
-  static Future<Map<String, int>> getLastRead() async {
+  static Future<void> removeBookmark(int surah, int page) async {
     final prefs = await SharedPreferences.getInstance();
-    return {
-      'surah': prefs.getInt(_keySurah) ?? 1,
-      'ayah': prefs.getInt(_keyAyah) ?? 1,
-    };
+    final List<String> existing = prefs.getStringList(_bookmarkKey) ?? [];
+
+    existing.removeWhere((item) {
+      final decoded = jsonDecode(item);
+      return decoded['surah'] == surah && decoded['page'] == page;
+    });
+
+    await prefs.setStringList(_bookmarkKey, existing);
+  }
+
+  // 🔥 ADD THIS
+  static Future<List<Map<String, dynamic>>> getBookmarks() async {
+    final prefs = await SharedPreferences.getInstance();
+    final List<String> existing = prefs.getStringList(_bookmarkKey) ?? [];
+
+    return existing.map((e) => jsonDecode(e) as Map<String, dynamic>).toList();
+  }
+
+  static Future<List<Map<String, dynamic>>> getLastThreeBookmarks() async {
+    final prefs = await SharedPreferences.getInstance();
+    final List<String> existing = prefs.getStringList(_bookmarkKey) ?? [];
+
+    final decoded = existing
+        .map((e) => jsonDecode(e) as Map<String, dynamic>)
+        .toList();
+
+    return decoded.reversed.take(3).toList();
   }
 }

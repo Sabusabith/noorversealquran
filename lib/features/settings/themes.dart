@@ -4,7 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:noorversealquran/core/theme/cubit/theme_cubit.dart';
 import 'package:noorversealquran/utils/components/theme.dart';
 
-class themes extends StatelessWidget {
+class Themes extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);

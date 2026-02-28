@@ -6,20 +6,24 @@ import 'package:noorversealquran/features/splash/bloc/splash_bloc.dart';
 import 'package:noorversealquran/features/splash/bloc/splash_event.dart';
 import 'package:noorversealquran/features/splash/presentation/splash.dart';
 import 'package:noorversealquran/utils/components/theme.dart';
+import 'package:noorversealquran/utils/components/theme_local_storage.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  final savedTheme = await ThemeLocalStorage.loadTheme();
 
-  runApp(const MyApp());
+  runApp(MyApp(initialTheme: savedTheme));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final AppThemeType initialTheme;
+
+  const MyApp({super.key, required this.initialTheme});
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => ThemeCubit(),
+      create: (_) => ThemeCubit(initialTheme),
       child: BlocBuilder<ThemeCubit, AppThemeType>(
         builder: (context, themeType) {
           return MaterialApp(
