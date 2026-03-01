@@ -146,9 +146,9 @@ class _TranslationSelectionPageState extends State<TranslationSelectionPage> {
             Navigator.pop(context);
           },
           child: Icon(
-            Icons.arrow_back,
+            Icons.arrow_back_ios_outlined,
             color: theme.colorScheme.onPrimary,
-            size: 18,
+            size: 16,
           ),
         ),
         backgroundColor: theme.primaryColor,

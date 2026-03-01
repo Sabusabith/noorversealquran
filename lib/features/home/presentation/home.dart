@@ -115,7 +115,7 @@ class _HomeViewState extends State<HomeView> {
                           ),
                           border: InputBorder.none,
                           prefixIcon: const Icon(
-                            Icons.search,
+                            CupertinoIcons.search,
                             color: Colors.white70,
                             size: 20,
                           ),
@@ -141,7 +141,11 @@ class _HomeViewState extends State<HomeView> {
               }
 
               return IconButton(
-                icon: const Icon(Icons.bookmark, color: Colors.yellow),
+                icon: const Icon(
+                  Icons.bookmark,
+                  color: Colors.yellow,
+                  size: 20,
+                ),
                 tooltip: "Open Bookmarks",
                 onPressed: () {
                   Navigator.push(
@@ -169,6 +173,7 @@ class _HomeViewState extends State<HomeView> {
                 icon: Icon(
                   isSearching ? Icons.close : CupertinoIcons.search,
                   color: Colors.white,
+                  size: 22,
                 ),
                 onPressed: () => context.read<HomeBloc>().add(ToggleSearch()),
               );

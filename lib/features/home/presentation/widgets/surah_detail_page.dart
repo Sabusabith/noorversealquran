@@ -666,9 +666,9 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
                         Navigator.pop(context);
                       },
                       child: Icon(
-                        Icons.arrow_back,
+                        Icons.arrow_back_ios_outlined,
                         color: theme.colorScheme.onPrimary,
-                        size: 18,
+                        size: 16,
                       ),
                     ),
                     title: Column(
@@ -800,9 +800,9 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
 
                       IconButton(
                         icon: Icon(
-                          Icons.more_vert,
+                          Icons.tune_rounded,
                           color: theme.colorScheme.onPrimary,
-                          size: 22,
+                          size: 20,
                         ),
                         onPressed: _showReaderMenu,
                       ),

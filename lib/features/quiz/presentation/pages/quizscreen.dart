@@ -30,11 +30,26 @@ class _QuizView extends StatelessWidget {
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
+        leading: GestureDetector(
+          onTap: () {
+            Navigator.pop(context);
+          },
+          child: Icon(
+            Icons.arrow_back_ios_outlined,
+            color: Colors.white,
+            size: 16,
+          ),
+        ),
         elevation: 0,
         backgroundColor: Colors.transparent,
         title: Text(
           "Islamic Quiz",
-          style: GoogleFonts.publicSans(fontWeight: FontWeight.bold),
+          style: GoogleFonts.poppins(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+            letterSpacing: 1,
+          ),
         ),
         actions: [
           IconButton(
@@ -163,7 +178,7 @@ class _QuizLoadedView extends StatelessWidget {
                 children: [
                   Text(
                     "Lap $currentLap",
-                    style: GoogleFonts.publicSans(
+                    style: GoogleFonts.poppins(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,

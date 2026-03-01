@@ -1,22 +1,34 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:noorversealquran/utils/common/app_colors.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class AboutPage extends StatelessWidget {
   const AboutPage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final textTheme = theme.textTheme;
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFFDFCF7),
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        title: Text(
-          "About",
-          style: GoogleFonts.publicSans(color: Colors.white),
-        ),
+        title: Text("About", style: GoogleFonts.poppins(fontSize: 18)),
         centerTitle: true,
+        leading: GestureDetector(
+          onTap: () {
+            Navigator.pop(context);
+          },
+          child: Icon(
+            Icons.arrow_back_ios_outlined,
+            color: theme.colorScheme.onPrimary,
+            size: 16,
+          ),
+        ),
         elevation: 0,
-        backgroundColor: kprimeryColor,
+        backgroundColor: colorScheme.primary,
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 30),
@@ -31,6 +43,7 @@ class AboutPage extends StatelessWidget {
                   style: GoogleFonts.playfairDisplay(
                     fontSize: 32,
                     fontWeight: FontWeight.w600,
+                    color: colorScheme.onBackground,
                   ),
                 ),
               ),
@@ -40,10 +53,9 @@ class AboutPage extends StatelessWidget {
               Center(
                 child: Text(
                   "A Digital Quran Experience",
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey.shade600,
+                  style: textTheme.bodySmall?.copyWith(
                     letterSpacing: 1.2,
+                    color: colorScheme.onBackground.withOpacity(0.6),
                   ),
                 ),
               ),
@@ -53,15 +65,14 @@ class AboutPage extends StatelessWidget {
               /// 📖 About Section
               Text(
                 "About the App",
-                style: GoogleFonts.publicSans(
-                  fontSize: 20,
+                style: textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.w600,
                 ),
               ),
 
               const SizedBox(height: 14),
 
-              const Text(
+              Text(
                 "NoorVerse is a humble digital space created to help Muslims "
                 "connect with the words of Allah in a calm and distraction-free "
                 "environment. It brings the complete Holy Quran in a simple, "
@@ -69,31 +80,7 @@ class AboutPage extends StatelessWidget {
                 "This application was built with sincerity and care, "
                 "seeking the pleasure of Allah and hoping it becomes "
                 "a source of continuous benefit for every reader.",
-                style: TextStyle(
-                  fontSize: 15,
-                  height: 1.7,
-                  color: Colors.black87,
-                ),
-              ),
-
-              const SizedBox(height: 30),
-
-              /// 👨‍💻 Developer Section
-              Text(
-                "Developer",
-                style: GoogleFonts.publicSans(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-
-              const SizedBox(height: 14),
-
-              const Text(
-                "Developed by: Mohammed Sabith\n\n"
-                "May Allah bless the efforts behind this work and "
-                "make it sincerely for His sake.",
-                style: TextStyle(fontSize: 15, height: 1.7),
+                style: textTheme.bodyMedium?.copyWith(height: 1.7),
               ),
 
               const SizedBox(height: 30),
@@ -101,27 +88,28 @@ class AboutPage extends StatelessWidget {
               /// 📚 Source Section
               Text(
                 "Quran Text Source",
-                style: GoogleFonts.publicSans(
-                  fontSize: 20,
+                style: textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.w600,
                 ),
               ),
 
               const SizedBox(height: 14),
 
-              const Text(
-                "The Quran text used in this application is provided "
-                "by the Tanzil Project (tanzil.net). "
-                "The text is carefully verified and widely trusted "
-                "for digital Quran applications.",
-                style: TextStyle(fontSize: 15, height: 1.7),
+              Text(
+                "The Quran text and translation used in this application "
+                "are sourced from the quran-json package, which is based on "
+                "the Tanzil Uthmani text provided by the Tanzil Project "
+                "(tanzil.net). The Tanzil text is carefully verified and "
+                "widely trusted for digital Quran applications.",
+                style: textTheme.bodyMedium?.copyWith(height: 1.7),
               ),
-
               const SizedBox(height: 8),
 
-              const Text(
+              Text(
                 "© Tanzil Project",
-                style: TextStyle(fontSize: 13, color: Colors.grey),
+                style: textTheme.bodySmall?.copyWith(
+                  color: colorScheme.onBackground.withOpacity(0.6),
+                ),
               ),
 
               const SizedBox(height: 30),
@@ -129,15 +117,14 @@ class AboutPage extends StatelessWidget {
               /// 🤲 Prayer Section
               Text(
                 "A Prayer",
-                style: GoogleFonts.publicSans(
-                  fontSize: 20,
+                style: textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.w600,
                 ),
               ),
 
               const SizedBox(height: 14),
 
-              const Text(
+              Text(
                 "We ask Allah to reward everyone who contributed "
                 "to the development of this application — the scholars, "
                 "developers, designers, and supporters.\n\n"
@@ -145,10 +132,52 @@ class AboutPage extends StatelessWidget {
                 "and make this work a continuous charity (Sadaqah Jariyah) "
                 "for them in this life and the Hereafter.\n\n"
                 "اللهم تقبل منا واجعل هذا العمل خالصًا لوجهك الكريم.",
-                style: TextStyle(
-                  fontSize: 15,
+                style: textTheme.bodyMedium?.copyWith(
                   height: 1.8,
                   fontStyle: FontStyle.italic,
+                ),
+              ),
+
+              const SizedBox(height: 30),
+
+              /// 📩 Report Issue Section
+              Text(
+                "Report an Issue",
+                style: textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+
+              const SizedBox(height: 14),
+
+              Text(
+                "If you find any mistake in the Quran text, translation, "
+                "or experience any issue while using the app, "
+                "please let us know so we can improve it.",
+                style: textTheme.bodyMedium?.copyWith(height: 1.7),
+              ),
+
+              const SizedBox(height: 12),
+
+              GestureDetector(
+                onTap: () async {
+                  final Uri emailUri = Uri(
+                    scheme: 'mailto',
+                    path: 'sabusabith6@gmail.com',
+                    queryParameters: {'subject': 'NoorVerse App Issue Report'},
+                  );
+
+                  await launchUrl(
+                    emailUri,
+                    mode: LaunchMode.externalApplication,
+                  );
+                },
+                child: Text(
+                  "📧 sabusabith6@gmail.com",
+                  style: textTheme.bodyMedium?.copyWith(
+                    color: colorScheme.primary,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
 
@@ -159,10 +188,9 @@ class AboutPage extends StatelessWidget {
                 child: Text(
                   "May this app be a source of light, guidance, and peace.",
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey.shade600,
+                  style: textTheme.bodySmall?.copyWith(
                     fontStyle: FontStyle.italic,
+                    color: colorScheme.onBackground.withOpacity(0.6),
                   ),
                 ),
               ),
