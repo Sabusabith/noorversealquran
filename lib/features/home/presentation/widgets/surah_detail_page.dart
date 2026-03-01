@@ -166,8 +166,6 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
   }
 
   Future<void> _toggleSavePage() async {
-    final theme = Theme.of(context);
-
     if (isSaved) {
       await LocalStorage.removeBookmark(widget.surah.number, currentPage);
 
@@ -358,8 +356,6 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
       builder: (_) {
-        final screenHeight = MediaQuery.of(context).size.height;
-
         return FractionallySizedBox(
           heightFactor: 0.9, // 🔥 Max 90% of screen
           child: Container(
@@ -513,8 +509,8 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
         return ReaderMenuBottomSheet(
           isSaved: isSaved,
           onToggleBookmark: _showSurahInfoDialog,
-          onToggleTranslation: () {
-            Navigator.push(
+          onToggleTranslation: () async {
+            await Navigator.push(
               context,
               MaterialPageRoute(
                 builder: (context) => TranslationSelectionPage(
@@ -522,6 +518,9 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
                 ),
               ),
             );
+
+            // 🔥 Reload translation when coming back
+            await _loadSavedTranslation();
           },
           onSelectReciter: () => _showReciterSelection(),
           onChangeTheme: () {
