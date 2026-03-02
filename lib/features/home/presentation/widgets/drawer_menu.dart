@@ -16,6 +16,7 @@ class DrawerMenu extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Drawer(
+      shape: Border(),
       backgroundColor: theme.scaffoldBackgroundColor,
       child: Column(
         children: [
@@ -64,18 +65,6 @@ class DrawerMenu extends StatelessWidget {
                     translationRepo: translationRepo,
                   ),
                 ),
-              );
-            },
-          ),
-
-          _drawerItem(
-            context,
-            icon: Icons.extension,
-            title: "Quiz",
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => QuizWelcomeScreen()),
               );
             },
           ),

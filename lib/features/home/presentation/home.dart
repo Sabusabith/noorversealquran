@@ -85,7 +85,7 @@ class _HomeViewState extends State<HomeView> {
     return Scaffold(
       drawer: DrawerMenu(translationRepo: translationRepos),
       appBar: AppBar(
-        toolbarHeight: 70,
+        toolbarHeight: 65,
         title: BlocBuilder<HomeBloc, HomeState>(
           builder: (context, state) {
             bool isSearching = state is HomeLoaded ? state.isSearching : false;
@@ -269,7 +269,7 @@ class _HomeViewState extends State<HomeView> {
                       child: Padding(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 20,
-                          vertical: 18,
+                          vertical: 12,
                         ),
                         child: Row(
                           children: [

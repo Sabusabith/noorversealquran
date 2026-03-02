@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:noorversealquran/features/home/presentation/home.dart';
+import 'package:noorversealquran/features/home/main_home.dart';
 import 'package:noorversealquran/features/splash/bloc/splash_bloc.dart';
 import 'package:noorversealquran/features/splash/bloc/splash_state.dart';
-import 'package:noorversealquran/utils/common/app_colors.dart';
 
 class SplashPage extends StatelessWidget {
   const SplashPage({super.key});
@@ -16,7 +15,7 @@ class SplashPage extends StatelessWidget {
         if (state is SplashCompleted) {
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (_) => const Home()),
+            MaterialPageRoute(builder: (_) => MainHome()),
           );
         }
       },
