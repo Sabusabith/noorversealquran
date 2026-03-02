@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:noorversealquran/core/app_snackbar.dart';
 import 'package:noorversealquran/core/theme/cubit/theme_cubit.dart';
+import 'package:noorversealquran/features/settings/bloc/cubit/reader_settings_cubit.dart';
 import 'package:noorversealquran/features/splash/bloc/splash_bloc.dart';
 import 'package:noorversealquran/features/splash/bloc/splash_event.dart';
 import 'package:noorversealquran/features/splash/presentation/splash.dart';
@@ -22,8 +23,11 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => ThemeCubit(initialTheme),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(create: (_) => ThemeCubit(initialTheme)),
+        BlocProvider(create: (_) => ReaderSettingsCubit()..load()),
+      ],
       child: BlocBuilder<ThemeCubit, AppThemeType>(
         builder: (context, themeType) {
           return MaterialApp(

@@ -6,6 +6,7 @@ class ReaderMenuBottomSheet extends StatelessWidget {
   final VoidCallback onToggleTranslation;
   final VoidCallback onChangeTheme;
   final VoidCallback onSelectReciter; // ✅ New callback for reciter
+  final VoidCallback onChangeSize;
 
   const ReaderMenuBottomSheet({
     super.key,
@@ -15,6 +16,7 @@ class ReaderMenuBottomSheet extends StatelessWidget {
     required this.onToggleBookmark,
     required this.onToggleTranslation,
     required this.onChangeTheme,
+    required this.onChangeSize,
   });
 
   @override
@@ -68,7 +70,12 @@ class ReaderMenuBottomSheet extends StatelessWidget {
                 title: "Select Reciter",
                 onTap: onSelectReciter, // ✅ Reciter action
               ),
-
+              _menuItem(
+                context,
+                icon: Icons.text_fields_rounded,
+                title: "Font Size",
+                onTap: onChangeSize,
+              ),
               _menuItem(
                 context,
                 icon: Icons.color_lens_outlined,

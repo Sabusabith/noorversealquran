@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:just_audio/just_audio.dart';
@@ -9,7 +10,9 @@ import 'package:noorversealquran/data/model/ayah_model.dart';
 import 'package:noorversealquran/features/home/data/model/surah_model.dart.dart';
 import 'package:noorversealquran/features/home/presentation/widgets/menusheet.dart';
 import 'package:noorversealquran/features/home/presentation/widgets/reciters.dart';
+import 'package:noorversealquran/features/settings/bloc/cubit/reader_settings_cubit.dart';
 import 'package:noorversealquran/features/settings/themes.dart';
+import 'package:noorversealquran/features/settings/widgets/reader_settings_screen.dart';
 import 'package:noorversealquran/features/translation_selection/repository/tranlsation_repo.dart';
 import 'package:noorversealquran/features/translation_selection/translation_selection_page.dart';
 import 'package:noorversealquran/utils/common/app_colors.dart';
@@ -211,7 +214,7 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
     }
   }
 
-  /// Fetch per-Ayah audio URLs using Al-Quran Cloud API
+  /// Fetch per-Ayah audio URLs using Al-Quran Cloud APIa
   Future<void> _fetchAyahAudioUrls() async {
     try {
       setState(() => _isAudioLoading = true);
@@ -529,6 +532,10 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
               MaterialPageRoute(builder: (context) => Themes()),
             );
           },
+          onChangeSize: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => ReaderSettingsPage()),
+          ),
         );
       },
     );
@@ -957,6 +964,7 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
   }
 
   void _scrollToAyah(int globalIndex) {
+    final readerState = context.read<ReaderSettingsCubit>().state;
     final isTranslationOn =
         widget.translationRepo.translationEnabled &&
         widget.translationRepo.selectedLanguage != null;
@@ -996,13 +1004,21 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
       spans.add(
         TextSpan(
           text: currentPageAyahs[i].text,
-          style: GoogleFonts.amiri(fontSize: 27, height: 2.4),
+          style: TextStyle(
+            fontFamily: 'KFGQPCUthmanic',
+            fontSize: readerState.arabicFontSize,
+            height: 2.4,
+          ),
         ),
       );
       spans.add(
         TextSpan(
           text: " ﴿${currentPageAyahs[i].number}﴾ ",
-          style: GoogleFonts.amiri(fontSize: 20, height: 2.4),
+          style: TextStyle(
+            fontFamily: 'KFGQPCUthmanic',
+            fontSize: readerState.arabicFontSize * 0.83,
+            height: 2.4,
+          ),
         ),
       );
     }
@@ -1013,7 +1029,7 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
       textAlign: TextAlign.justify,
     );
 
-    final double maxWidth = MediaQuery.of(context).size.width - 50;
+    final double maxWidth = MediaQuery.of(context).size.width - 36;
     textPainter.layout(maxWidth: maxWidth);
 
     // Calculate character offset before target ayah
@@ -1110,6 +1126,7 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
     int pageIndex,
     int highlightedIndex,
   ) {
+    final readerState = context.watch<ReaderSettingsCubit>().state;
     final theme = Theme.of(context);
 
     int ayahStartIndex = 0;
@@ -1179,7 +1196,7 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
                                     TextSpan(
                                       text: ayahs[i].text,
                                       style: TextStyle(
-                                        fontSize: 24,
+                                        fontSize: readerState.arabicFontSize,
                                         height: 2.4,
                                         fontFamily: 'KFGQPCUthmanic',
                                         color: theme.colorScheme.onSurface,
@@ -1191,7 +1208,8 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
                                     TextSpan(
                                       text: " ﴿${ayahs[i].number}﴾ ",
                                       style: GoogleFonts.amiri(
-                                        fontSize: 18,
+                                        fontSize:
+                                            readerState.arabicFontSize * 0.75,
                                         color: theme.colorScheme.secondary,
                                       ),
                                     ),
@@ -1213,7 +1231,7 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
                                       ) ??
                                       "",
                                   style: TextStyle(
-                                    fontSize: 13,
+                                    fontSize: readerState.translationFontSize,
                                     height: 1.5,
                                     color: theme.colorScheme.onSurface,
                                     fontWeight: isCurrentAyah
@@ -1263,9 +1281,9 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
                       textAlign: TextAlign.justify,
                       textDirection: TextDirection.rtl,
                       text: TextSpan(
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontFamily: 'KFGQPCUthmanic',
-                          fontSize: 24,
+                          fontSize: readerState.arabicFontSize,
                           height: 2.4,
                         ),
                         children: [
@@ -1302,7 +1320,7 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
                               text: " ﴿${ayahs[i].number}﴾ ",
                               style: GoogleFonts.amiri(
                                 color: theme.colorScheme.secondary,
-                                fontSize: 20,
+                                fontSize: readerState.arabicFontSize * 0.83,
                               ),
                             ),
                           ],
@@ -1348,7 +1366,9 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontFamily: 'KFGQPCUthmanic',
-                  fontSize: 25,
+                  fontSize:
+                      context.read<ReaderSettingsCubit>().state.arabicFontSize -
+                      4,
                   height: 2,
 
                   fontWeight: FontWeight.bold,

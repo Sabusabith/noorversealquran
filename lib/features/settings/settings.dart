@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:noorversealquran/features/settings/bloc/cubit/reader_settings_cubit.dart';
+import 'package:noorversealquran/features/settings/bloc/cubit/reader_settings_state.dart';
 import 'package:noorversealquran/features/settings/themes.dart';
+import 'package:noorversealquran/features/settings/widgets/reader_settings_screen.dart';
 import 'package:noorversealquran/utils/common/app_colors.dart';
 
 class SettingsPage extends StatelessWidget {
@@ -33,7 +37,7 @@ class SettingsPage extends StatelessWidget {
           SizedBox(height: 24),
           _AppearanceSection(),
           SizedBox(height: 24),
-          // _ReadingSection(),
+          _ReadingSection(),
           // SizedBox(height: 24),
           // _NotificationSection(),
           // SizedBox(height: 24),
@@ -113,21 +117,34 @@ class _ReadingSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _sectionTitle("Quran Reading"),
         const SizedBox(height: 12),
-        SwitchListTile(
-          title: const Text("Show Translation"),
-          value: true,
-          onChanged: (value) {},
-        ),
-        ListTile(
-          title: const Text("Arabic Font Size"),
-          subtitle: const Text("Adjust reading size"),
-          trailing: Icon(Icons.chevron_right, color: kprimeryColor),
-          onTap: () {},
+
+        Card(
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: BorderSide(
+              color: theme.primaryColor.withOpacity(0.3),
+              width: 1.2,
+            ),
+          ),
+          child: ListTile(
+            title: const Text("Font Size"),
+            subtitle: const Text("Adjust Arabic & Translation size"),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const ReaderSettingsPage()),
+              );
+            },
+          ),
         ),
       ],
     );
