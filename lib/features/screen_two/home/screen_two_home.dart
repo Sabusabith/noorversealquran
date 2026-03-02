@@ -36,7 +36,7 @@ class ListPage extends StatelessWidget {
           return GestureDetector(
             onTap: () {
               switch (features[index]["title"]) {
-                case "Names of":
+                case "Names of Allah":
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (_) => const AllahNamesPage()),
