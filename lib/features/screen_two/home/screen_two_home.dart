@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:noorversealquran/features/quiz/presentation/pages/quiz_splash/quiz_splash.dart';
 import 'package:noorversealquran/features/screen_two/home/widgets/name_screen.dart';
+import 'package:noorversealquran/features/screen_two/home/widgets/preyer/preyer.dart';
 import 'package:noorversealquran/features/screen_two/home/widgets/tasbeeh.dart';
 
 class ListPage extends StatelessWidget {
@@ -22,6 +23,12 @@ class ListPage extends StatelessWidget {
       "title": "Tasbih Counter",
       "image": "assets/images/islamic.png",
       "colors": [Color(0xFF42275A), Color(0xFF734B6D)],
+    },
+
+    {
+      "title": "Prayer",
+      "image": "assets/images/prayer.png", // make sure you have an image
+      "colors": [Color(0xFF1E3C72), Color(0xFF2A5298)],
     },
   ];
 
@@ -58,12 +65,18 @@ class ListPage extends StatelessWidget {
                     ),
                   );
                   break;
+                case "Prayer":
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => PrayerPage()),
+                  );
+                  break;
               }
             },
             child: Container(
               margin: const EdgeInsets.only(bottom: 18),
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(18),
+                borderRadius: BorderRadius.circular(5),
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
