@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -114,12 +115,26 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
   Future<void> _checkIfPageBookmarked() async {
     final bookmarks = await LocalStorage.getBookmarks();
 
-    final exists = bookmarks.any(
+    final match = bookmarks.firstWhere(
       (b) => b['surah'] == widget.surah.number && b['page'] == currentPage,
+      orElse: () => {},
     );
 
-    if (mounted) {
-      setState(() => isSaved = exists);
+    if (match.isNotEmpty) {
+      setState(() {
+        isSaved = match['ayah'] == null;
+        bookmarkedAyahIndex = match['ayah'] is int ? match['ayah'] : null;
+      });
+      if (bookmarkedAyahIndex != null) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _scrollToAyah(bookmarkedAyahIndex!);
+        });
+      }
+    } else {
+      setState(() {
+        isSaved = false;
+        bookmarkedAyahIndex = null;
+      });
     }
   }
 
@@ -172,7 +187,10 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
     if (isSaved) {
       await LocalStorage.removeBookmark(widget.surah.number, currentPage);
 
-      setState(() => isSaved = false);
+      setState(() {
+        isSaved = false;
+        bookmarkedAyahIndex = null;
+      });
 
       if (widget.onPageSaved != null) {
         await widget.onPageSaved!(null);
@@ -193,7 +211,10 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
     } else {
       await LocalStorage.saveBookmark(widget.surah.number, currentPage);
 
-      setState(() => isSaved = true);
+      setState(() {
+        isSaved = true;
+        bookmarkedAyahIndex = null; // 🔥 CLEAR AYAH BOOKMARK
+      });
 
       if (widget.onPageSaved != null) {
         await widget.onPageSaved!(currentPage);
@@ -326,13 +347,6 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
           }
         },
       );
-
-      // Optional: auto play if jumpToPage is set
-      // if (widget.jumpToPage != null) {
-      //   await _audioPlayer.play();
-      //   setState(() => _isAudioPlaying = true);
-      // }
-      // If user pressed play while loading
     } catch (e) {
       print("Error loading audio: $e");
       if (mounted) {
@@ -705,12 +719,10 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
                       Transform(
                         transform: Matrix4.translationValues(14, 0, 0),
                         child: IconButton(
-                          icon: isSaved
+                          icon: (isSaved || bookmarkedAyahIndex != null)
                               ? Icon(
                                   Icons.bookmark,
-                                  color: !isSaved
-                                      ? theme.colorScheme.onPrimary
-                                      : Colors.red,
+                                  color: Colors.red,
                                   size: 19,
                                 )
                               : Icon(Icons.bookmark_border, size: 19),
@@ -743,6 +755,9 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
                                 await _initAudio();
                                 _audioInitialized = true;
                                 await _audioPlayer.play();
+                                setState(() {
+                                  bookmarkedAyahIndex = null;
+                                });
                               } catch (_) {}
 
                               if (mounted) {
@@ -1117,6 +1132,7 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
     );
   }
 
+  int? bookmarkedAyahIndex;
   Widget _buildPage(
     bool isvisible,
     String surah,
@@ -1173,75 +1189,107 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
                     Builder(
                       builder: (context) {
                         bool isCurrentAyah =
-                            _isAudioPlaying &&
-                            (ayahStartIndex + i) == currentAyahIndex.value;
+                            (_isAudioPlaying &&
+                                (ayahStartIndex + i) ==
+                                    currentAyahIndex.value) ||
+                            (bookmarkedAyahIndex == (ayahStartIndex + i));
 
-                        return Container(
-                          key: _ayahKeys[ayahStartIndex + i],
-                          margin: const EdgeInsets.only(bottom: 10),
-                          padding: const EdgeInsets.only(left: 18, right: 18),
-                          decoration: BoxDecoration(
-                            color: isCurrentAyah
-                                ? theme.colorScheme.secondary.withOpacity(0.12)
-                                : Colors.transparent,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              /// Arabic
-                              Text.rich(
-                                TextSpan(
-                                  children: [
-                                    TextSpan(
-                                      text: ayahs[i].text,
-                                      style: TextStyle(
-                                        fontSize: readerState.arabicFontSize,
-                                        height: 2.4,
-                                        fontFamily: 'KFGQPCUthmanic',
-                                        color: theme.colorScheme.onSurface,
-                                        fontWeight: isCurrentAyah
-                                            ? FontWeight.bold
-                                            : FontWeight.w300,
+                        return GestureDetector(
+                          onLongPress: () async {
+                            int globalIndex = ayahStartIndex + i;
+
+                            if (bookmarkedAyahIndex == globalIndex) {
+                              await LocalStorage.removeBookmark(
+                                widget.surah.number,
+                                pageIndex,
+                              );
+
+                              setState(() {
+                                bookmarkedAyahIndex = null;
+                                isSaved = false;
+                              });
+                            } else {
+                              await LocalStorage.saveBookmark(
+                                widget.surah.number,
+                                pageIndex,
+                                ayah: globalIndex,
+                              );
+
+                              setState(() {
+                                bookmarkedAyahIndex = globalIndex;
+                                isSaved = false; // page bookmark disabled
+                              });
+                            }
+                          },
+                          child: Container(
+                            key: _ayahKeys[ayahStartIndex + i],
+                            margin: const EdgeInsets.only(bottom: 10),
+                            padding: const EdgeInsets.only(left: 18, right: 18),
+                            decoration: BoxDecoration(
+                              color: isCurrentAyah
+                                  ? theme.colorScheme.secondary.withOpacity(
+                                      0.12,
+                                    )
+                                  : Colors.transparent,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                /// Arabic
+                                Text.rich(
+                                  TextSpan(
+                                    children: [
+                                      TextSpan(
+                                        text: ayahs[i].text,
+                                        style: TextStyle(
+                                          fontSize: readerState.arabicFontSize,
+                                          height: 2.4,
+                                          fontFamily: 'KFGQPCUthmanic',
+                                          color: theme.colorScheme.onSurface,
+                                          fontWeight: isCurrentAyah
+                                              ? FontWeight.bold
+                                              : FontWeight.w300,
+                                        ),
                                       ),
-                                    ),
-                                    TextSpan(
-                                      text: " ﴿${ayahs[i].number}﴾ ",
-                                      style: GoogleFonts.amiri(
-                                        fontSize:
-                                            readerState.arabicFontSize * 0.75,
-                                        color: theme.colorScheme.secondary,
+                                      TextSpan(
+                                        text: " ﴿${ayahs[i].number}﴾ ",
+                                        style: GoogleFonts.amiri(
+                                          fontSize:
+                                              readerState.arabicFontSize * 0.75,
+                                          color: theme.colorScheme.secondary,
+                                        ),
                                       ),
-                                    ),
-                                  ],
-                                ),
-                                textAlign: TextAlign.justify,
-                                textDirection: TextDirection.rtl,
-                              ),
-
-                              const SizedBox(height: 6),
-
-                              /// Translation
-                              Directionality(
-                                textDirection: TextDirection.ltr,
-                                child: Text(
-                                  widget.translationRepo.getTranslation(
-                                        widget.surah.number,
-                                        ayahs[i].number - 1,
-                                      ) ??
-                                      "",
-                                  style: TextStyle(
-                                    fontSize: readerState.translationFontSize,
-                                    height: 1.5,
-                                    color: theme.colorScheme.onSurface,
-                                    fontWeight: isCurrentAyah
-                                        ? FontWeight.w600
-                                        : FontWeight.normal,
+                                    ],
                                   ),
-                                  textAlign: TextAlign.left,
+                                  textAlign: TextAlign.justify,
+                                  textDirection: TextDirection.rtl,
                                 ),
-                              ),
-                            ],
+
+                                const SizedBox(height: 6),
+
+                                /// Translation
+                                Directionality(
+                                  textDirection: TextDirection.ltr,
+                                  child: Text(
+                                    widget.translationRepo.getTranslation(
+                                          widget.surah.number,
+                                          ayahs[i].number - 1,
+                                        ) ??
+                                        "",
+                                    style: TextStyle(
+                                      fontSize: readerState.translationFontSize,
+                                      height: 1.5,
+                                      color: theme.colorScheme.onSurface,
+                                      fontWeight: isCurrentAyah
+                                          ? FontWeight.w600
+                                          : FontWeight.normal,
+                                    ),
+                                    textAlign: TextAlign.left,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         );
                       },
@@ -1290,22 +1338,46 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
                           for (int i = 0; i < ayahs.length; i++) ...[
                             TextSpan(
                               text: ayahs[i].text,
+                              recognizer: LongPressGestureRecognizer()
+                                ..onLongPress = () async {
+                                  int globalIndex = ayahStartIndex + i;
+
+                                  if (bookmarkedAyahIndex == globalIndex) {
+                                    await LocalStorage.removeBookmark(
+                                      widget.surah.number,
+                                      pageIndex,
+                                    );
+
+                                    setState(() {
+                                      bookmarkedAyahIndex = null;
+                                      isSaved = false;
+                                    });
+                                  } else {
+                                    await LocalStorage.saveBookmark(
+                                      widget.surah.number,
+                                      pageIndex,
+                                      ayah: globalIndex,
+                                    );
+
+                                    setState(() {
+                                      bookmarkedAyahIndex = globalIndex;
+                                      isSaved = false;
+                                    });
+                                  }
+                                },
                               style: TextStyle(
                                 backgroundColor:
                                     (_isAudioPlaying &&
-                                        (ayahStartIndex + i) ==
-                                            currentAyahIndex.value)
+                                            (ayahStartIndex + i) ==
+                                                currentAyahIndex.value) ||
+                                        bookmarkedAyahIndex ==
+                                            (ayahStartIndex + i)
                                     ? theme.colorScheme.secondary.withOpacity(
                                         0.25,
                                       )
                                     : Colors.transparent,
                                 fontFamily: 'KFGQPCUthmanic',
-                                color:
-                                    (_isAudioPlaying &&
-                                        (ayahStartIndex + i) ==
-                                            currentAyahIndex.value)
-                                    ? theme.colorScheme.onSurface
-                                    : theme.colorScheme.onSurface,
+                                color: theme.colorScheme.onSurface,
                                 fontWeight:
                                     (_isAudioPlaying &&
                                         (ayahStartIndex + i) ==
@@ -1315,7 +1387,6 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
                               ),
                             ),
 
-                            /// Ayah Number — ALWAYS Accent Color
                             TextSpan(
                               text: " ﴿${ayahs[i].number}﴾ ",
                               style: GoogleFonts.amiri(

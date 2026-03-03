@@ -16,24 +16,29 @@ class LocalStorage {
     return prefs.getString(_reciterKey) ?? "ar.alafasy";
   }
 
-  static Future<void> saveBookmark(int surah, int page) async {
+  static Future<void> saveBookmark(int surah, int page, {int? ayah}) async {
     final prefs = await SharedPreferences.getInstance();
     final List<String> existing = prefs.getStringList(_bookmarkKey) ?? [];
 
-    final newBookmark = {'surah': surah, 'page': page};
+    final newBookmark = {
+      'surah': surah,
+      'page': page,
+      'ayah': ayah, // can be null (page bookmark)
+    };
 
-    // Remove duplicate if exists
+    // Remove duplicate
     existing.removeWhere((item) {
       final decoded = jsonDecode(item);
-      return decoded['surah'] == surah && decoded['page'] == page;
+      return decoded['surah'] == surah &&
+          decoded['page'] == page &&
+          decoded['ayah'] == ayah;
     });
 
-    // Add new bookmark
     existing.add(jsonEncode(newBookmark));
 
-    // 🔥 Keep only last 3 bookmarks
+    // Keep only last 3
     while (existing.length > 3) {
-      existing.removeAt(0); // removes oldest
+      existing.removeAt(0);
     }
 
     await prefs.setStringList(_bookmarkKey, existing);

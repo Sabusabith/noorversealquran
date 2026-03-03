@@ -56,9 +56,9 @@ class _BookmarkScreenState extends State<BookmarkScreen> {
             Navigator.pop(context);
           },
           child: Icon(
-            Icons.arrow_back,
+            Icons.arrow_back_ios_outlined,
             color: theme.colorScheme.onPrimary,
-            size: 18,
+            size: 16,
           ),
         ),
         title: Text("Bookmarks", style: GoogleFonts.poppins(fontSize: 18)),
