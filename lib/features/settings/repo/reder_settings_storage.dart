@@ -3,12 +3,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 class ReaderSettingsStorage {
   static Future<double> loadArabicSize() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getDouble("arabicFontSize") ?? 24;
+    return prefs.getDouble("arabicFontSize") ?? 28;
   }
 
   static Future<double> loadTranslationSize() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getDouble("translationFontSize") ?? 13;
+    return prefs.getDouble("translationFontSize") ?? 15;
   }
 
   static Future<void> saveArabicSize(double size) async {

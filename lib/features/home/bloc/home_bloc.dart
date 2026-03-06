@@ -74,7 +74,12 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
 
       final arabicMatch = normalizeArabic(s.nameAr).contains(normalizedQuery);
 
-      return englishMatch || arabicMatch;
+      // ✅ NEW: Surah number match
+      final numberMatch = s.number.toString().contains(
+        query,
+      ); // assuming s.id is surah number
+
+      return englishMatch || arabicMatch || numberMatch;
     }).toList();
 
     emit(current.copyWith(filteredSurahs: filtered, query: query));

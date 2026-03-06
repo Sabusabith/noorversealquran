@@ -86,87 +86,123 @@ class _DigitalTasbihPageState extends State<DigitalTasbihPage>
     });
   }
 
-  void _showDuaDialog(ThemeData theme) {
-    showDialog(
+  void _showDuaBottomSheet(ThemeData theme) {
+    showModalBottomSheet(
       context: context,
-      builder: (_) => Dialog(
-        backgroundColor: theme.scaffoldBackgroundColor,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        child: Container(
-          padding: const EdgeInsets.all(16),
-          constraints: const BoxConstraints(maxHeight: 400),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Title with accent line
-              Column(
-                children: [
-                  Container(
-                    width: 40,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: theme.colorScheme.secondary,
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    "Select Dua",
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: theme.colorScheme.onBackground,
-                      fontSize: 20,
-                    ),
-                  ),
-                ],
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) {
+        return SafeArea(
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+            decoration: BoxDecoration(
+              color: theme.scaffoldBackgroundColor,
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(30),
               ),
-              const SizedBox(height: 12),
-              Expanded(
-                child: ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: _duas.length,
-                  itemBuilder: (context, index) {
-                    final dua = _duas[index];
-                    return Card(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      elevation: 2,
-                      margin: const EdgeInsets.symmetric(vertical: 6),
-                      color: theme.cardColor,
-                      child: ListTile(
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 8,
-                        ),
-                        title: Text(
-                          "${dua['arabic']} • ${dua['english']}",
-                          style: theme.textTheme.bodyLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: theme.colorScheme.onSurface,
-                          ),
-                        ),
-
-                        onTap: () {
-                          setState(() {
-                            _selectedDua = dua;
-                            _count = 0;
-                          });
-                          Navigator.pop(context);
-                        },
-                        trailing: Icon(
-                          Icons.check_circle_outline,
-                          color: theme.colorScheme.secondary,
-                        ),
-                      ),
-                    );
-                  },
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.15),
+                  blurRadius: 20,
+                  offset: const Offset(0, -5),
                 ),
-              ),
-            ],
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Drag Indicator
+                Container(
+                  width: 50,
+                  height: 5,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade400,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                const SizedBox(height: 20),
+
+                // Title
+                Text(
+                  "Select Dua",
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                SizedBox(
+                  height: 400,
+                  child: ListView.separated(
+                    physics: const BouncingScrollPhysics(),
+                    itemCount: _duas.length,
+                    separatorBuilder: (_, __) =>
+                        Divider(color: Colors.grey.shade300),
+                    itemBuilder: (context, index) {
+                      final dua = _duas[index];
+                      final isSelected =
+                          _selectedDua['arabic'] == dua['arabic'];
+
+                      return AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 10,
+                        ),
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? theme.colorScheme.secondary.withOpacity(0.1)
+                              : Colors.transparent,
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        child: ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          title: Text(
+                            dua['arabic'] ?? '',
+                            textAlign: TextAlign.right,
+                            style: TextStyle(
+                              fontFamily: 'ScheherazadeNew',
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                              color: isSelected
+                                  ? theme.colorScheme.secondary
+                                  : theme.colorScheme.onSurface,
+                            ),
+                          ),
+                          subtitle: Padding(
+                            padding: const EdgeInsets.only(top: 4),
+                            child: Text(
+                              "${dua['english']} • ${dua['meaning']}",
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                color: Colors.grey.shade600,
+                              ),
+                            ),
+                          ),
+                          trailing: isSelected
+                              ? Icon(
+                                  Icons.check_circle,
+                                  color: theme.colorScheme.secondary,
+                                )
+                              : null,
+                          onTap: () {
+                            setState(() {
+                              _selectedDua = dua;
+                              _count = 0;
+                            });
+                            Navigator.pop(context);
+                          },
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
@@ -175,6 +211,21 @@ class _DigitalTasbihPageState extends State<DigitalTasbihPage>
     final theme = Theme.of(context);
 
     return Scaffold(
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 20, right: 20),
+        child: GestureDetector(
+          onTap: _reset,
+          child: Container(
+            width: 60,
+            height: 60,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.red,
+            ),
+            child: Icon(Icons.refresh, size: 28, color: Colors.white),
+          ),
+        ),
+      ),
       appBar: AppBar(
         toolbarHeight: 60,
         leading: GestureDetector(
@@ -207,61 +258,46 @@ class _DigitalTasbihPageState extends State<DigitalTasbihPage>
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             // Dua Selector
-            GestureDetector(
-              onTap: () => _showDuaDialog(theme),
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 16,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.25),
-                      blurRadius: 12,
-                      offset: const Offset(0, 6),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            Column(
+              children: [
+                GestureDetector(
+                  onTap: () => _showDuaBottomSheet(theme),
+                  child: RichText(
+                    textAlign: TextAlign.center,
+                    text: TextSpan(
                       children: [
-                        Flexible(
-                          child: Text(
-                            _selectedDua['arabic'] ?? "Select Dua",
-                            style: theme.textTheme.headlineSmall?.copyWith(
-                              color: theme.colorScheme.onPrimary,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            overflow: TextOverflow.ellipsis,
+                        TextSpan(
+                          text: _selectedDua['arabic'] ?? "Tap to Select Dua ",
+                          style: theme.textTheme.headlineSmall?.copyWith(
+                            fontFamily: 'ScheherazadeNew',
+                            fontWeight: FontWeight.bold,
+                            color: theme.colorScheme.onPrimary,
                           ),
                         ),
-                        Icon(
-                          Icons.arrow_drop_down,
-                          color: theme.colorScheme.onPrimary,
-                          size: 30,
-                        ),
+                        if (_selectedDua['arabic'] == "Select Dua")
+                          TextSpan(
+                            text: "👆🏻",
+                            style: TextStyle(
+                              fontSize: 22, // no fontFamily here!
+                            ),
+                          ),
                       ],
                     ),
-                    if ((_selectedDua['english'] ?? '').isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 4.0),
-                        child: Text(
-                          "${_selectedDua['english']} - ${_selectedDua['meaning']}",
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            color: theme.colorScheme.onPrimary.withOpacity(0.7),
-                            fontSize: 14,
-                          ),
-                        ),
-                      ),
-                  ],
+                  ),
                 ),
-              ),
+
+                if ((_selectedDua['english'] ?? '').isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: Text(
+                      "${_selectedDua['english']} - ${_selectedDua['meaning']}",
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.colorScheme.onPrimary.withOpacity(0.8),
+                      ),
+                    ),
+                  ),
+              ],
             ),
             const SizedBox(height: 50),
 
@@ -308,23 +344,6 @@ class _DigitalTasbihPageState extends State<DigitalTasbihPage>
               ),
             ),
             const SizedBox(height: 30),
-
-            // Reset Button
-            ElevatedButton(
-              onPressed: _reset,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red.shade600,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 48,
-                  vertical: 16,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                elevation: 6,
-              ),
-              child: const Icon(Icons.refresh, size: 28, color: Colors.white),
-            ),
           ],
         ),
       ),

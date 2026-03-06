@@ -81,8 +81,6 @@ class PrayerPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return DefaultTabController(
       length: 2,
       child: Scaffold(
@@ -90,13 +88,7 @@ class PrayerPage extends StatelessWidget {
         appBar: AppBar(
           elevation: 0,
           centerTitle: true,
-          title: Text(
-            "Prayer Guide",
-            style: GoogleFonts.poppins(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
+          title: Text("Prayer Guide", style: GoogleFonts.poppins(fontSize: 18)),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
             onPressed: () => Navigator.pop(context),
@@ -107,6 +99,7 @@ class PrayerPage extends StatelessWidget {
             labelStyle: const TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.w600,
+              letterSpacing: 1.5,
             ),
             tabs: const [
               Tab(text: "Men"),
@@ -175,18 +168,20 @@ class PrayerPage extends StatelessWidget {
                     ),
                   ),
 
-                  const SizedBox(height: 25),
+                  const SizedBox(height: 20),
 
                   /// 🔵 PRAYER GRID
                   Expanded(
                     child: GridView.builder(
+                      physics: BouncingScrollPhysics(),
+                      padding: EdgeInsets.only(bottom: 70),
                       itemCount: prayers.length,
                       gridDelegate:
                           const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2,
-                            crossAxisSpacing: 10,
-                            mainAxisSpacing: 10,
-                            childAspectRatio: 1 / 1,
+                            crossAxisCount: 3,
+                            crossAxisSpacing: 12,
+                            mainAxisSpacing: 16,
+                            childAspectRatio: 1 / 1.5,
                           ),
                       itemBuilder: (context, index) {
                         final prayer = prayers[index];

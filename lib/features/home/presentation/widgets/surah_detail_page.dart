@@ -50,12 +50,10 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
   bool _audioInitialized = false;
   bool _isUiVisible = true;
   late List<List<Ayah>> pagedAyahs;
-  late PageController _pageController;
-
+  late final PageController _pageController;
   int currentPage = 0;
   bool isSaved = false;
-  bool _fontsLoaded = false;
-
+  static const int _ayahsPerPage = 7;
   // ----- AUDIO VARIABLES -----
   late AudioPlayer _audioPlayer;
   ValueNotifier<int> currentAyahIndex = ValueNotifier<int>(-1);
@@ -70,17 +68,22 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
   @override
   void initState() {
     super.initState();
-    // _enterFullscreen(); // start immersive
 
     _audioPlayer = AudioPlayer();
     pagedAyahs = _splitIntoPages(widget.ayahs);
+
     _ayahKeys.addAll(
       List.generate(widget.ayahs.length, (index) => GlobalKey()),
     );
 
-    _loadSavedPage();
-    _initialize();
+    final int startPage = widget.jumpToPage ?? 0;
 
+    // ✅ CREATE CONTROLLER HERE (SYNCHRONOUSLY)
+    _pageController = PageController(initialPage: startPage);
+
+    currentPage = startPage;
+
+    _initialize(); // no controller creation inside
     _loadSavedTranslation();
   }
 
@@ -139,13 +142,15 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
   }
 
   Future<void> _initialize() async {
-    await GoogleFonts.pendingFonts([GoogleFonts.amiri()]);
     final prefs = await SharedPreferences.getInstance();
     final key = 'last_page_surah_${widget.surah.number}';
     final saved = prefs.getInt(key);
     final startPage = widget.jumpToPage ?? saved ?? 0;
 
-    _pageController = PageController(initialPage: startPage);
+    if (widget.jumpToPage == null && saved != null) {
+      _pageController.jumpToPage(saved);
+      currentPage = saved;
+    }
     _pageController.addListener(() {
       if (!_isAudioPlaying) return;
       if (!_pageController.hasClients) return;
@@ -164,24 +169,23 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
     });
 
     setState(() {
-      _fontsLoaded = true;
       currentPage = startPage;
     });
 
     await _checkIfPageBookmarked(); // 👈 ADD THIS LINE
   }
 
-  Future<void> _loadSavedPage() async {
-    final prefs = await SharedPreferences.getInstance();
-    final key = 'last_page_surah_${widget.surah.number}';
-    final saved = prefs.getInt(key);
+  // Future<void> _loadSavedPage() async {
+  //   final prefs = await SharedPreferences.getInstance();
+  //   final key = 'last_page_surah_${widget.surah.number}';
+  //   final saved = prefs.getInt(key);
 
-    int startPage = widget.jumpToPage ?? saved ?? 0;
+  //   int startPage = widget.jumpToPage ?? saved ?? 0;
 
-    setState(() {
-      currentPage = startPage;
-    });
-  }
+  //   setState(() {
+  //     currentPage = startPage;
+  //   });
+  // }
 
   Future<void> _toggleSavePage() async {
     if (isSaved) {
@@ -560,8 +564,7 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
     _audioPlayer.dispose();
     currentAyahIndex.dispose();
     _scrollController.dispose();
-    // _exitFullscreen(); // restore system UI
-
+    _pageController.dispose();
     super.dispose();
   }
 
@@ -595,11 +598,11 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
     super.build(context);
     final theme = Theme.of(context);
 
-    if (!_fontsLoaded) {
-      return Scaffold(
-        body: Center(child: CircularProgressIndicator(color: kprimeryColor)),
-      );
-    }
+    // if (!_fontsLoaded) {
+    //   return Scaffold(
+    //     body: Center(child: CircularProgressIndicator(color: kprimeryColor)),
+    //   );
+    // }
 
     final showBismillah = widget.surah.number != 9;
 
@@ -697,8 +700,9 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
                       children: [
                         Text(
                           widget.surah.nameAr,
-                          style: GoogleFonts.scheherazadeNew(
-                            fontSize: 20,
+                          style: TextStyle(
+                            fontFamily: 'ScheherazadeNew',
+                            fontSize: 24,
                             fontWeight: FontWeight.bold,
                             color: theme.colorScheme.onPrimary,
                           ),
@@ -706,9 +710,10 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
                         const SizedBox(height: 2),
                         Text(
                           widget.surah.tName,
-                          style: GoogleFonts.publicSans(
+                          style: TextStyle(
+                            fontFamily: 'PublicSans',
                             fontSize: 13,
-                            fontWeight: FontWeight.w500,
+                            fontWeight: FontWeight.w900,
                             color: theme.colorScheme.onPrimary,
                             letterSpacing: 1.5,
                           ),
@@ -853,9 +858,11 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
                   child: Center(
                     child: Text(
                       "Page ${currentPage + 1} of ${pagedAyahs.length}",
-                      style: GoogleFonts.publicSans(
+                      style: TextStyle(
+                        fontFamily: 'Amiri',
                         color: theme.colorScheme.onPrimary,
-                        fontWeight: FontWeight.w600,
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
@@ -906,7 +913,8 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
                     children: [
                       Text(
                         widget.surah.nameAr,
-                        style: GoogleFonts.amiri(
+                        style: TextStyle(
+                          fontFamily: 'Amiri',
                           fontSize: 26,
                           fontWeight: FontWeight.bold,
                           color: theme.colorScheme.onPrimary,
@@ -1006,7 +1014,7 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
     // 🔥 PARAGRAPH MODE (Pixel Perfect)
     // ---------------------------------
 
-    final int pageStartIndex = currentPage * 7;
+    final int pageStartIndex = currentPage * _ayahsPerPage;
     final int localIndex = globalIndex - pageStartIndex;
 
     if (localIndex < 0 || localIndex >= pagedAyahs[currentPage].length) return;
@@ -1161,6 +1169,8 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
       ),
       padding: const EdgeInsets.only(left: 0, right: 0, top: 0, bottom: 1),
       child: SingleChildScrollView(
+        key: PageStorageKey("page_$pageIndex"),
+        padding: const EdgeInsets.only(bottom: 40),
         controller: _scrollController,
         child: isTranslationOn
             ? Column(
@@ -1174,7 +1184,8 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
                       padding: const EdgeInsets.only(right: 18),
                       child: Text(
                         "$surah $surahEn",
-                        style: GoogleFonts.scheherazadeNew(
+                        style: TextStyle(
+                          fontFamily: 'ScheherazadeNew',
                           color: theme.colorScheme.onSurface,
                           fontSize: 16,
                         ),
@@ -1254,7 +1265,8 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
                                       ),
                                       TextSpan(
                                         text: " ﴿${ayahs[i].number}﴾ ",
-                                        style: GoogleFonts.amiri(
+                                        style: TextStyle(
+                                          fontFamily: 'Amiri',
                                           fontSize:
                                               readerState.arabicFontSize * 0.75,
                                           color: theme.colorScheme.secondary,
@@ -1315,7 +1327,8 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
                         children: [
                           Text(
                             "$surah $surahEn",
-                            style: GoogleFonts.scheherazadeNew(
+                            style: TextStyle(
+                              fontFamily: 'ScheherazadeNew',
                               color: theme.colorScheme.onSurface,
                               fontSize: 16,
                             ),
@@ -1389,7 +1402,8 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
 
                             TextSpan(
                               text: " ﴿${ayahs[i].number}﴾ ",
-                              style: GoogleFonts.amiri(
+                              style: TextStyle(
+                                fontFamily: 'Amiri',
                                 color: theme.colorScheme.secondary,
                                 fontSize: readerState.arabicFontSize * 0.83,
                               ),
@@ -1455,13 +1469,12 @@ class _SurahDetailsPageState extends State<SurahDetailsPage>
   }
 
   List<List<Ayah>> _splitIntoPages(List<Ayah> ayahs) {
-    const int ayahsPerPage = 7;
     List<List<Ayah>> pages = [];
-    for (int i = 0; i < ayahs.length; i += ayahsPerPage) {
+    for (int i = 0; i < ayahs.length; i += _ayahsPerPage) {
       pages.add(
         ayahs.sublist(
           i,
-          i + ayahsPerPage > ayahs.length ? ayahs.length : i + ayahsPerPage,
+          i + _ayahsPerPage > ayahs.length ? ayahs.length : i + _ayahsPerPage,
         ),
       );
     }

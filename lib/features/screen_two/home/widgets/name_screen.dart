@@ -130,7 +130,8 @@ class _AllahNamesPageState extends State<AllahNamesPage> {
     }
 
     return ListView.builder(
-      padding: const EdgeInsets.all(16),
+      physics: BouncingScrollPhysics(),
+      padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 70),
       itemCount: names.length,
       itemBuilder: (context, index) {
         final item = names[index];

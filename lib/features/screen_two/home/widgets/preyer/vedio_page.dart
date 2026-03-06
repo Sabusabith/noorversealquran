@@ -69,9 +69,8 @@ class _PrayerVideoPageState extends State<PrayerVideoPage> {
                   title: Text(
                     widget.title,
                     style: GoogleFonts.poppins(
-                      letterSpacing: 1.5,
                       fontSize: 18,
-                      fontWeight: FontWeight.w600,
+                      letterSpacing: 1.5,
                     ),
                   ),
                 ),

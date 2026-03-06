@@ -104,6 +104,8 @@ class _HomeViewState extends State<HomeView> {
                       child: TextField(
                         autofocus: true,
                         style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'PublicSans',
                           color: Colors.white,
                           fontSize: 16,
                         ),
@@ -111,6 +113,8 @@ class _HomeViewState extends State<HomeView> {
                         decoration: InputDecoration(
                           hintText: "Search Surah...",
                           hintStyle: TextStyle(
+                            fontFamily: 'PublicSans',
+                            fontWeight: FontWeight.bold,
                             color: Colors.white.withOpacity(0.7),
                           ),
                           border: InputBorder.none,
@@ -127,8 +131,13 @@ class _HomeViewState extends State<HomeView> {
                     )
                   : Text(
                       "NoorVerse",
-                      key: const ValueKey("title"),
-                      style: GoogleFonts.sourceSerif4(color: kwhiteColor),
+                      key: ValueKey("title"),
+                      style: TextStyle(
+                        fontFamily: 'PublicSans',
+                        fontWeight: FontWeight.w900,
+                        fontSize: 25,
+                        color: kwhiteColor,
+                      ),
                     ),
             );
           },
@@ -196,6 +205,7 @@ class _HomeViewState extends State<HomeView> {
             return Directionality(
               textDirection: TextDirection.rtl,
               child: ListView.builder(
+                physics: BouncingScrollPhysics(),
                 padding: const EdgeInsets.symmetric(
                   horizontal: 18,
                   vertical: 24,
@@ -298,9 +308,10 @@ class _HomeViewState extends State<HomeView> {
                                   Text(
                                     surah.nameAr,
                                     textAlign: TextAlign.right,
-                                    style: GoogleFonts.amiri(
+                                    style: TextStyle(
+                                      fontFamily: 'Amiri',
                                       fontSize: 24,
-                                      fontWeight: FontWeight.w600,
+                                      fontWeight: FontWeight.w500,
                                       color: const Color(0xFF1A1A1A),
                                       height: 1.4,
                                     ),
@@ -309,7 +320,8 @@ class _HomeViewState extends State<HomeView> {
                                   Text(
                                     surah.tName,
                                     textAlign: TextAlign.right,
-                                    style: GoogleFonts.sourceSerif4(
+                                    style: TextStyle(
+                                      fontFamily: 'PublicSans',
                                       fontSize: 15,
                                       fontWeight: FontWeight.w400,
                                       color: const Color(0xFF6B6B6B),

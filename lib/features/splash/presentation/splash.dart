@@ -63,7 +63,8 @@ class SplashPage extends StatelessWidget {
 
                     Text(
                       "NoorVerse – Al Quran",
-                      style: GoogleFonts.sourceSerif4(
+                      style: TextStyle(
+                        fontFamily: 'PublicSans',
                         color: isDark
                             ? onPrimary.withOpacity(0.90)
                             : secondary.withOpacity(0.9),
@@ -82,7 +83,8 @@ class SplashPage extends StatelessWidget {
                 child: Center(
                   child: Text(
                     versionText,
-                    style: GoogleFonts.poppins(
+                    style: TextStyle(
+                      fontFamily: 'PublicSans',
                       color: onPrimary.withOpacity(0.4),
                       fontSize: 12,
                     ),
